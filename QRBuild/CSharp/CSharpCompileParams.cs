@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using QRBuild.Linq;
 
 namespace QRBuild.CSharp
 {
@@ -34,17 +33,55 @@ namespace QRBuild.CSharp
         {
         }
 
+        public CSharpCompileParams(CSharpCompileParams rhs)
+        {
+            DeepCopy(rhs);
+        }
+
+        public void DeepCopy(CSharpCompileParams rhs)
+        {
+            //-- Meta Options
+            CscPath = rhs.CscPath;
+            SourceRoot = rhs.SourceRoot;
+            ExtraArgs = rhs.ExtraArgs;
+            //-- Input Options
+            Sources.AddRange(rhs.Sources);
+            References.AddRange(rhs.References);
+            InputModules.AddRange(rhs.InputModules);
+            //-- Output Options
+            Output = rhs.Output;
+            TargetFormat = rhs.TargetFormat;
+            Platform = rhs.Platform;
+            //-- Code Generation
+            Debug = rhs.Debug;
+            Optimize = rhs.Optimize;
+            //-- Errors and Warnings
+            WarnAsError = rhs.WarnAsError;
+            WarnLevel = rhs.WarnLevel;
+            //-- Language
+            Checked = rhs.Checked;
+            Unsafe = rhs.Unsafe;
+            Defines.AddRange(rhs.Defines);
+            LanguageVersion = rhs.LanguageVersion;
+            //-- Miscellaneous
+            NoConfig = rhs.NoConfig;
+            //-- Advanced
+            MainType = rhs.MainType;
+            FullPaths = rhs.FullPaths;
+            PdbFilePath = rhs.PdbFilePath;
+            ModuleAssemblyName = rhs.ModuleAssemblyName;
+        }
+
         //-- Meta Options
         /// Path to the C# compiler executable (csc.exe on Windows).
         public string CscPath;
         public string SourceRoot;
-
         public string ExtraArgs;
 
         //-- Input Options
-        public readonly IList<string> Sources = new List<string>();
-        public readonly IList<string> References = new List<string>();
-        public readonly IList<string> InputModules = new List<string>();
+        public readonly HashSet<string> Sources = new HashSet<string>();
+        public readonly HashSet<string> References = new HashSet<string>();
+        public readonly HashSet<string> InputModules = new HashSet<string>();
 
         //-- Output Options
         public string Output;
@@ -62,8 +99,11 @@ namespace QRBuild.CSharp
         //-- Language
         public bool Checked;
         public bool Unsafe;
-        public readonly IList<string> Defines = new List<string>();
+        public readonly List<string> Defines = new List<string>();
         public string LanguageVersion;
+
+        //-- Miscellaneous
+        public bool NoConfig = true;
 
         //-- Advanced
         public string MainType;

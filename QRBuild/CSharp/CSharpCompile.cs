@@ -13,25 +13,27 @@ namespace QRBuild.CSharp
 
         public bool Execute()
         {
-            var psi = new ProcessStartInfo();
-            psi.FileName = m_params.CscPath;
-            psi.WorkingDirectory = m_params.SourceRoot;
-            psi.Arguments = m_params.ToArgumentString();
-            psi.UseShellExecute = false;
-            psi.CreateNoWindow = true;
-            psi.RedirectStandardOutput = true;
+            //  TODO: this passes arguments directly; use response file instead
+            
+            var processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = m_params.CscPath;
+            processStartInfo.WorkingDirectory = m_params.SourceRoot;
+            processStartInfo.Arguments = m_params.ToArgumentString();
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.RedirectStandardOutput = true;
 
-            Console.WriteLine("{0} {1}", psi.FileName, psi.Arguments);
+            Console.WriteLine("{0} {1}", processStartInfo.FileName, processStartInfo.Arguments);
 
             try
             {
-                using (Process process = Process.Start(psi))
+                using (Process process = Process.Start(processStartInfo))
                 {
                     process.WaitForExit();
                     Console.Write(process.StandardOutput.ReadToEnd());
                 }
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 Console.WriteLine(">> process failed to start");
             }

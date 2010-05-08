@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Linq\CollectionsExtensions.cs" />
     <Compile Include="CSharp\CSharpCompile.cs" />
     <Compile Include="CSharp\CSharpCompileParams.cs" />
     <Compile Include="CSharp\CSharpCompileExtensions.cs" />

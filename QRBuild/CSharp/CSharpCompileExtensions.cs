@@ -64,6 +64,10 @@ namespace QRBuild.CSharp
             {
                 b.AppendFormat("/langversion:{0} ", p.LanguageVersion);
             }
+            //-- Miscellaneous
+            if (p.NoConfig) {
+                b.AppendFormat("/noconfig ");
+            }
             //-- Advanced
             if (!String.IsNullOrEmpty(p.MainType))
             {
