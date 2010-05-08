@@ -16,7 +16,7 @@ namespace QRBuild.CSharp
             {
                 b.AppendFormat("\"{0}\" ", sourceFile);
             }
-            foreach (string reference in p.References)
+            foreach (string reference in p.AssemblyReferences)
             {
                 b.AppendFormat("/r:\"{0}\" ", reference);
             }
@@ -25,9 +25,9 @@ namespace QRBuild.CSharp
                 b.AppendFormat("/addmodule:\"{0}\" ", module);
             }
             //-- Output Options
-            if (!String.IsNullOrEmpty(p.Output))
+            if (!String.IsNullOrEmpty(p.OutputFilePath))
             {
-                b.AppendFormat("/out:\"{0}\" ", p.Output);
+                b.AppendFormat("/out:\"{0}\" ", p.OutputFilePath);
             }
             if (!String.IsNullOrEmpty(p.TargetFormat))
             {

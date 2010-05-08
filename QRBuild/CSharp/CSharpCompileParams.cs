@@ -46,10 +46,10 @@ namespace QRBuild.CSharp
             ExtraArgs = rhs.ExtraArgs;
             //-- Input Options
             Sources.AddRange(rhs.Sources);
-            References.AddRange(rhs.References);
+            AssemblyReferences.AddRange(rhs.AssemblyReferences);
             InputModules.AddRange(rhs.InputModules);
             //-- Output Options
-            Output = rhs.Output;
+            OutputFilePath = rhs.OutputFilePath;
             TargetFormat = rhs.TargetFormat;
             Platform = rhs.Platform;
             //-- Code Generation
@@ -80,11 +80,11 @@ namespace QRBuild.CSharp
 
         //-- Input Options
         public readonly HashSet<string> Sources = new HashSet<string>();
-        public readonly HashSet<string> References = new HashSet<string>();
+        public readonly HashSet<string> AssemblyReferences = new HashSet<string>();
         public readonly HashSet<string> InputModules = new HashSet<string>();
 
         //-- Output Options
-        public string Output;
+        public string OutputFilePath;
         public string TargetFormat;
         public string Platform;
 

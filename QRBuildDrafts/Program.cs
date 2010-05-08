@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 
 using QRBuild.CSharp;
+using QRBuild.Engine;
 
 namespace QRBuild
 {
@@ -18,8 +19,10 @@ namespace QRBuild
             cscp.Sources.Add(@"K:\work\code\C#\foo\Blah.cs");
             cscp.Platform = CSharpPlatforms.AnyCpu;
             cscp.Debug = true;
-            
-            var csc = new CSharpCompile(cscp);
+
+            var buildGraph = new BuildGraph();
+
+            var csc = new CSharpCompile(buildGraph, cscp);
             csc.Execute();
             Console.WriteLine(">> Press a key");
             Console.ReadKey();

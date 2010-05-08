@@ -45,6 +45,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BuildGraph.cs" />
+    <Compile Include="Engine\BuildNode.cs" />
+    <Compile Include="Engine\BuildStatus.cs" />
+    <Compile Include="Engine\BuildTranslation.cs" />
+    <Compile Include="IO\QRPath.cs" />
     <Compile Include="Linq\CollectionsExtensions.cs" />
     <Compile Include="CSharp\CSharpCompile.cs" />
     <Compile Include="CSharp\CSharpCompileParams.cs" />
