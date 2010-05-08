@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using QRBuild.Collections;
 
 namespace QRBuild.CSharp
 {
@@ -26,6 +28,48 @@ namespace QRBuild.CSharp
     {
         public static string Iso1 = "ISO-1";
         public static string Iso2 = "ISO-2";
+    }
+
+    public class CscParams
+    {
+        public CscParams()
+        {
+            m_props = new ChainedProperties();
+        }
+        public CscParams(CscParams parent)
+        {
+            m_props = new ChainedProperties(parent.m_props);
+        }
+
+        //-- Meta Options
+        /// Path to the C# compiler executable (csc.exe on Windows).
+        public string CscPath {
+            get { return m_props.Get<string>(Key.CscPath); }
+            set { m_props.Set(Key.CscPath, value); }
+        }
+        public string SourceRoot {
+            get { return m_props.Get<string>(Key.SourceRoot); }
+            set { m_props.Set(Key.SourceRoot, value); }
+        }
+        public string ExtraArgs {
+            get { return m_props.Get<string>(Key.ExtraArgs); }
+            set { m_props.Set(Key.ExtraArgs, value); }
+        }
+
+        //-- Input Options
+        public readonly IList<string> Sources = new List<string>();
+        public readonly IList<string> References = new List<string>();
+        public readonly IList<string> InputModules = new List<string>();
+        
+
+        readonly ChainedProperties m_props;
+        
+        static class Key
+        {
+            public static readonly object CscPath = new object();
+            public static readonly object SourceRoot = new object();
+            public static readonly object ExtraArgs = new object();
+        }
     }
 
     public class CSharpCompileParams
