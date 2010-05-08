@@ -23,13 +23,6 @@ namespace QRBuild
             csc.Execute();
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
-
-
-            var cp2 = new CscParams();
-            cp2.CscPath = @"C:\Windows\Microsoft.NET\Framework\v3.5\csc";
-            var cp3 = new CscParams(cp2);
-            string s = cp3.CscPath;
-            
         }
     }
 }
