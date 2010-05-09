@@ -43,7 +43,8 @@ namespace QRBuild.CSharp
                 b.AppendFormat("/optimize ");
             }
             //-- Errors and Warnings
-            if (p.WarnAsError) {
+            if (p.WarnAsError) 
+            {
                 b.AppendFormat("/warnaserror ");
             }
             b.AppendFormat("/warn:{0} ", p.WarnLevel);
@@ -65,7 +66,8 @@ namespace QRBuild.CSharp
                 b.AppendFormat("/langversion:{0} ", p.LanguageVersion);
             }
             //-- Miscellaneous
-            if (p.NoConfig) {
+            if (p.NoConfig) 
+            {
                 b.AppendFormat("/noconfig ");
             }
             //-- Advanced
@@ -73,18 +75,22 @@ namespace QRBuild.CSharp
             {
                 b.AppendFormat("/main:{0} ", p.MainType);
             }
-            if (p.FullPaths) {
+            if (p.FullPaths) 
+            {
                 b.AppendFormat("/fullpaths ");
             }
-            if (!String.IsNullOrEmpty(p.PdbFilePath)) {
+            if (!String.IsNullOrEmpty(p.PdbFilePath)) 
+            {
                 b.AppendFormat("/pdb:\"{0}\"", p.PdbFilePath);
             }
-            if (!String.IsNullOrEmpty(p.ModuleAssemblyName)) {
+            if (!String.IsNullOrEmpty(p.ModuleAssemblyName)) 
+            {
                 b.AppendFormat("/moduleassemblyname:{0} ", p.ModuleAssemblyName);
             }
 
             //  ExtraArgs goes at the end.
-            if (!String.IsNullOrEmpty(p.ExtraArgs)) {
+            if (!String.IsNullOrEmpty(p.ExtraArgs)) 
+            {
                 b.AppendFormat("{0} ", p.ExtraArgs);
             }
 

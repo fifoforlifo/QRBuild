@@ -36,13 +36,15 @@ namespace QRBuild.CSharp
                 {
                     process.WaitForExit();
                     Console.Write(process.StandardOutput.ReadToEnd());
+                    bool result = process.ExitCode == 0;
+                    return result;
                 }
             }
             catch (System.Exception)
             {
                 Console.WriteLine(">> process failed to start");
+                return false;
             }
-            return true;
         }
 
         public override string GetCacheableTranslationParameters()
@@ -60,10 +62,12 @@ namespace QRBuild.CSharp
         protected override void ComputeOutputs(HashSet<string> outputs)
         {
             outputs.Add(m_params.OutputFilePath);
-            if (!String.IsNullOrEmpty(m_params.PdbFilePath)) {
+            if (!String.IsNullOrEmpty(m_params.PdbFilePath)) 
+            {
                 outputs.Add(m_params.PdbFilePath);
             }
-            else {
+            else 
+            {
                 // compiler's default behavior is to use Output filename with .pdb extension
                 string pdbFilePath = QRPath.ChangeFileNameExtensionForPath(m_params.OutputFilePath, ".pdb");
                 outputs.Add(pdbFilePath);
@@ -72,7 +76,8 @@ namespace QRBuild.CSharp
 
         protected override string GetDefaultDepsCacheFilePath()
         {
-            if (String.IsNullOrEmpty(m_params.OutputFilePath)) {
+            if (String.IsNullOrEmpty(m_params.OutputFilePath)) 
+            {
                 return null;
             }
             string depsCacheFilePath = m_params.OutputFilePath + ".deps";

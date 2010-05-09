@@ -45,10 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BuildAction.cs" />
     <Compile Include="Engine\BuildGraph.cs" />
     <Compile Include="Engine\BuildNode.cs" />
+    <Compile Include="Engine\BuildOptions.cs" />
+    <Compile Include="Engine\BuildProcess.cs" />
+    <Compile Include="Engine\BuildResults.cs" />
     <Compile Include="Engine\BuildStatus.cs" />
+    <Compile Include="Engine\BuildFile.cs" />
     <Compile Include="Engine\BuildTranslation.cs" />
+    <Compile Include="Engine\DependencyCache.cs" />
+    <Compile Include="Engine\IFileDecider.cs" />
+    <Compile Include="FileSizeDateDecider.cs" />
     <Compile Include="IO\QRPath.cs" />
     <Compile Include="Linq\CollectionsExtensions.cs" />
     <Compile Include="CSharp\CSharpCompile.cs" />

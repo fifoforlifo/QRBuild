@@ -10,6 +10,11 @@ namespace QRBuild.Engine
     {
         //-- Public concrete interface
 
+        /// metadata
+        public string Name;
+        public string SubGraphName;
+        public Dictionary<string, object> MetaData = new Dictionary<string, object>();
+
         /// The BuildGraph to which this Translation belongs.
         public BuildGraph BuildGraph { get; private set; }
 
@@ -20,7 +25,8 @@ namespace QRBuild.Engine
         { 
             get
             {
-                if (m_depsCachePath == null) {
+                if (m_depsCachePath == null) 
+                {
                     return GetDefaultDepsCacheFilePath();
                 }
                 return m_depsCachePath;
@@ -84,7 +90,8 @@ namespace QRBuild.Engine
         /// Constructor to be called by derived classes.
         protected BuildTranslation(BuildGraph buildGraph)
         {
-            if (buildGraph == null) {
+            if (buildGraph == null) 
+            {
                 throw new ArgumentNullException("buildGraph");
             }
             BuildNode = new BuildNode(this);
