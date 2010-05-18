@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cpp\Msvc9Compile.cs" />
+    <Compile Include="Cpp\Msvc9CompileExtensions.cs" />
+    <Compile Include="Cpp\Msvc9CompileParams.cs" />
     <Compile Include="Engine\BuildAction.cs" />
     <Compile Include="Engine\BuildGraph.cs" />
     <Compile Include="Engine\BuildNode.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="Engine\IFileDecider.cs" />
     <Compile Include="FileSizeDateDecider.cs" />
     <Compile Include="IO\QRPath.cs" />
+    <Compile Include="IO\QRFileStream.cs" />
     <Compile Include="Linq\CollectionsExtensions.cs" />
     <Compile Include="CSharp\CSharpCompile.cs" />
     <Compile Include="CSharp\CSharpCompileParams.cs" />

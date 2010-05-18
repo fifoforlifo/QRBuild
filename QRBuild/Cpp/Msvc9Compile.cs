@@ -10,11 +10,11 @@ using QRBuild.Engine;
 using QRBuild.IO;
 using QRBuild.Linq;
 
-namespace QRBuild.CSharp
+namespace QRBuild.Cpp
 {
-    public sealed class CSharpCompile : BuildTranslation
+    public sealed class Msvc9Compile : BuildTranslation
     {
-        public CSharpCompile(BuildGraph buildGraph, CSharpCompileParams p)
+        public Msvc9Compile(BuildGraph buildGraph, Msvc9CompileParams p)
             : base(buildGraph)
         {
             m_params = p;
@@ -23,10 +23,16 @@ namespace QRBuild.CSharp
         public override bool Execute()
         {
             //  TODO: this passes arguments directly; use response file instead
-            
+            //  TODO: use separate process to launch the build, for handles isolation
+
             var processStartInfo = new ProcessStartInfo();
-            processStartInfo.FileName = m_params.CscPath;
-            processStartInfo.WorkingDirectory = m_params.CompileDir;
+            processStartInfo.FileName = null;
+            if (!String.IsNullOrEmpty(m_params.CompileDir)) {
+                processStartInfo.WorkingDirectory = m_params.CompileDir;
+            }
+            else {
+                processStartInfo.WorkingDirectory = Path.GetDirectoryName(m_params.SourceFile);
+            }
             processStartInfo.Arguments = m_params.ToArgumentString();
             processStartInfo.UseShellExecute = false;
             processStartInfo.CreateNoWindow = true;
@@ -59,37 +65,37 @@ namespace QRBuild.CSharp
 
         protected override void ComputeInputs(HashSet<string> inputs)
         {
-            inputs.AddRange(m_params.Sources);
-            inputs.AddRange(m_params.InputModules);
-            inputs.AddRange(m_params.AssemblyReferences);
+            inputs.Add(m_params.SourceFile);
         }
 
         protected override void ComputeOutputs(HashSet<string> outputs)
         {
-            outputs.Add(m_params.OutputFilePath);
-            if (!String.IsNullOrEmpty(m_params.PdbFilePath)) 
-            {
-                outputs.Add(m_params.PdbFilePath);
-            }
-            else 
-            {
-                // compiler's default behavior is to use Output filename with .pdb extension
-                string pdbFilePath = QRPath.ChangeExtension(m_params.OutputFilePath, ".pdb");
+            string objFilePath = QRPath.ComputeDefaultFilePath(m_params.ObjectPath, m_params.SourceFile, ".obj");
+            outputs.Add(objFilePath);
+            if (m_params.DebugInfoFormat != Msvc9DebugInfoFormat.None) {
+                string pdbFilePath = QRPath.ComputeDefaultFilePath(m_params.PdbPath, m_params.SourceFile, ".pdb");
                 outputs.Add(pdbFilePath);
+            }
+            if (m_params.AsmOutputFormat != Msvc9AsmOutputFormat.None) {
+                string asmFilePath = QRPath.ComputeDefaultFilePath(m_params.PdbPath, m_params.SourceFile, ".asm");
+                outputs.Add(asmFilePath);
+            }
+            if (!String.IsNullOrEmpty(m_params.CreatePchFilePath)) {
+                string pchFilePath = QRPath.ComputeDefaultFilePath(m_params.CreatePchFilePath, m_params.SourceFile, ".pch");
+                outputs.Add(pchFilePath);
             }
         }
 
         protected override string GetDefaultDepsCacheFilePath()
         {
-            if (String.IsNullOrEmpty(m_params.OutputFilePath)) 
+            if (String.IsNullOrEmpty(m_params.ObjectPath))
             {
                 return null;
             }
-            string depsCacheFilePath = m_params.OutputFilePath + ".deps";
+            string depsCacheFilePath = m_params.ObjectPath + ".deps";
             return depsCacheFilePath;
         }
 
-
-        readonly CSharpCompileParams m_params;
+        private readonly Msvc9CompileParams m_params;
     }
 }

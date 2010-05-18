@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using QRBuild.IO;
 using QRBuild.Linq;
 
 namespace QRBuild.Engine
@@ -278,41 +279,50 @@ namespace QRBuild.Engine
             var inputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.GetInputs());
             var outputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.GetOutputs());
 
-            //  TODO: lock deps cache file here (exclusive open/create for read/write)
-
-            if (!RequiresBuild(buildNode, inputs, outputs))
+            //  depsCache file opened for exclusive access here.  
+            using (FileStream depsCacheFileStream = new FileStream(buildNode.Translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
-                //  success!  we can early-exit
-                return BuildStatus.TranslationUpToDate;
-            }
-            //  Ensure inputs exist prior to execution.
-            //  This must be done here since Translation.Execute() is not
-            //  expected to do the checks.
-            if (!FilesExist(inputs, m_buildOptions.ContinueOnError))
-            {
-                //  failed.  some input does not exist
-                return BuildStatus.InputsDoNotExist;
-            }
+                if (!RequiresBuild(buildNode, depsCacheFileStream, inputs, outputs))
+                {
+                    //  success!  we can early-exit
+                    return BuildStatus.TranslationUpToDate;
+                }
 
-            bool executeSucceeded = buildNode.Translation.Execute();
-            if (!executeSucceeded)
-            {
-                //  failed.  Remove the deps cache file to implicitly dirty 
-                //           this Translation for next time.
-                File.Delete(buildNode.Translation.DepsCacheFilePath);
-                return BuildStatus.ExecuteFailed;
+                //  From here, we need to guarantee that the depsCache is written out.
+                try
+                {
+                    //  Ensure inputs exist prior to execution.
+                    //  This must be done here since Translation.Execute() is not
+                    //  expected to do the checks.
+                    if (!FilesExist(inputs, m_buildOptions.ContinueOnError))
+                    {
+                        //  failed.  some input does not exist
+                        return BuildStatus.InputsDoNotExist;
+                    }
+
+                    bool executeSucceeded = buildNode.Translation.Execute();
+                    if (!executeSucceeded)
+                    {
+                        //  failed.  Remove the deps cache file to implicitly dirty 
+                        //           this Translation for next time.
+                        File.Delete(buildNode.Translation.DepsCacheFilePath);
+                        return BuildStatus.ExecuteFailed;
+                    }
+
+                    //  success.
+                    return BuildStatus.ExecuteSucceeded;
+                }
+                finally
+                {
+                    //  Write out the new deps cache file.
+                    string depsCacheString = DependencyCache.CreateDepsCacheString(
+                        buildNode.Translation,
+                        m_buildOptions.FileDecider,
+                        inputs,
+                        outputs);
+                    QRFileStream.WriteAllText(depsCacheFileStream, depsCacheString);
+                }
             }
-
-            //  success!  write out the new deps cache file and return
-            string depsCacheString = DependencyCache.CreateDepsCacheString(
-                buildNode.Translation,
-                m_buildOptions.FileDecider,
-                inputs,
-                outputs);
-            File.WriteAllText(buildNode.Translation.DepsCacheFilePath, depsCacheString, Encoding.UTF8);
-            //  TODO: unlock deps cache file here
-
-            return BuildStatus.ExecuteSucceeded;
         }
 
         private static bool FilesExist(IEnumerable<BuildFile> buildFiles, bool continueOnError)
@@ -331,7 +341,7 @@ namespace QRBuild.Engine
             return true;
         }
 
-        private bool RequiresBuild(BuildNode buildNode, ICollection<BuildFile> inputs, ICollection<BuildFile> outputs)
+        private bool RequiresBuild(BuildNode buildNode, FileStream fileStream, ICollection<BuildFile> inputs, ICollection<BuildFile> outputs)
         {
             if (!File.Exists(buildNode.Translation.DepsCacheFilePath))
             {
@@ -340,7 +350,7 @@ namespace QRBuild.Engine
 
             //  Load a string representation of the previous state of files on disk.            
             //  If the deps cache does not exist, then return true to indicate we must build.
-            string previousBuildNodeState = File.ReadAllText(buildNode.Translation.DepsCacheFilePath);
+            string previousBuildNodeState = QRFileStream.ReadAllText(fileStream);
             if (previousBuildNodeState == null)
             {
                 return true;
