@@ -11,8 +11,6 @@ namespace QRBuild.Engine
         //-- Public concrete interface
 
         /// metadata
-        public string Name;
-        public string SubGraphName;
         public Dictionary<string, object> MetaData = new Dictionary<string, object>();
 
         /// The BuildGraph to which this Translation belongs.
@@ -21,17 +19,16 @@ namespace QRBuild.Engine
         /// The DepsCache file is used to store Translation parameters
         /// and inputs+outputs.  It is used to determine dirty status
         /// during a BuildProcess execution.
-        public string DepsCacheFilePath 
+        public string DepsCacheFilePath
         { 
             get
             {
                 if (m_depsCachePath == null) 
                 {
-                    return GetDefaultDepsCacheFilePath();
+                    m_depsCachePath = PrimaryOutputFilePath + ".deps";
                 }
                 return m_depsCachePath;
             }
-            set { m_depsCachePath = value; } 
         }
 
         /// Additional user-defined inputs (file names).
@@ -40,36 +37,56 @@ namespace QRBuild.Engine
         {
             get { return m_forcedInputs; }
         }
-
         /// Additional user-defined outputs (file names).
         /// Used by BuildGraph to perform dependency analysis.
         public HashSet<string> ForcedOutputs
         {
             get { return m_forcedOutputs; }
         }
-
-        public HashSet<string> GetInputs()
+        /// Inputs that are fully determined by BuildTranslation params.
+        public HashSet<string> ExplicitInputs
         {
-            HashSet<string> inputs = new HashSet<string>();
-            ComputeInputs(inputs); // request inputs from derived class
-            inputs.AddRange(ForcedInputs);
-            return inputs;
+            get { return m_explicitInputs; }
         }
-        public HashSet<string> GetOutputs()
+        /// Outputs that are fully determined by BuildTranslation params.
+        public HashSet<string> ExplicitOutputs
         {
-            HashSet<string> outputs = new HashSet<string>();
-            ComputeOutputs(outputs); // request outputs from derived class
-            outputs.AddRange(ForcedOutputs);
-            return outputs;
+            get { return m_explicitOutputs; }
+        }
+        /// Inputs that are determined based on the contents of ExplicitInputs.
+        public HashSet<string> ImplicitInputs
+        {
+            get { return m_implicitInputs; }
         }
 
+        /// Causes ExplicitInputs and ExplicitOutputs to be updated.
+        public void UpdateExplicitIO()
+        {
+            ExplicitInputs.Clear();
+            ExplicitOutputs.Clear();
+            ComputeExplicitIO(ExplicitInputs, ExplicitOutputs);
+            ExplicitInputs.AddRange(ForcedInputs);
+            ExplicitOutputs.AddRange(ForcedOutputs);
+        }
+        /// Causes ImplicitInputs and ImplicitOutputs to be updated.
+        public bool UpdateImplicitIO()
+        {
+            ImplicitInputs.Clear();
+            bool implicitInputsKnown = ComputeImplicitInputs(ImplicitInputs);
+            return implicitInputsKnown;
+        }
 
         //-- Public abstract interface
         
-        /// Execute
+        /// Execute causes outputs to be created.
         public abstract bool Execute();
 
         //  TODO: add events for Executing and Executed
+
+        /// Returns the name of the primary output of this translation.
+        /// This file name is used as a base for generating other build-related
+        /// files, such as the DepsCache and any process launching scripts.
+        public abstract string PrimaryOutputFilePath { get; }
 
         /// Get a string that contains all configuration parameters that
         /// control the translation.  These are stored in DepsCache files,
@@ -99,22 +116,11 @@ namespace QRBuild.Engine
             BuildGraph.Add(this);
         }
 
-        /// Implementors should add inputs in this function.
-        /// Parameter 'inputs' is guaranteed to be empty on entry.
-        protected abstract void ComputeInputs(HashSet<string> inputs);
+        /// Implementors compute explicit inputs and outputs.
+        protected abstract void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs);
 
-        /// Implementors should add outputs in this function.
-        /// Parameter 'outputs' is guaranteed to be empty on entry.
-        protected abstract void ComputeOutputs(HashSet<string> outputs);
-
-        /// Implementor can optionally implement this to make things
-        /// more convenient for users.
-        /// A typical implementation will name the file after the
-        /// "primary" output of the Translation.
-        protected virtual string GetDefaultDepsCacheFilePath()
-        {
-            return null;
-        }
+        /// Implementors compute implicit inputs.
+        protected abstract bool ComputeImplicitInputs(HashSet<string> inputs);
 
 
         ///-----------------------------------------------------------------
@@ -123,5 +129,9 @@ namespace QRBuild.Engine
         private string m_depsCachePath;
         private readonly HashSet<string> m_forcedInputs = new HashSet<string>();
         private readonly HashSet<string> m_forcedOutputs = new HashSet<string>();
+        private readonly HashSet<string> m_explicitInputs = new HashSet<string>();
+        private readonly HashSet<string> m_explicitOutputs = new HashSet<string>();
+        private readonly HashSet<string> m_implicitInputs = new HashSet<string>();
+        private readonly HashSet<string> m_implicitOutputs = new HashSet<string>();
     }
 }

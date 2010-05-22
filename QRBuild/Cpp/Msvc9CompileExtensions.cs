@@ -119,7 +119,8 @@ namespace QRBuild.Cpp
                 throw new InvalidOperationException("C/C++ SourceFile not specified");
             }
             b.AppendFormat("{0} ", p.SourceFile);
-            b.Append("/nologo ");
+            b.Append("/nologo ");   // do not print logo to stdout
+            b.Append("/FC ");       // show full path in diagnostic messages
 
             //-- Input and Output Options
             if (!String.IsNullOrEmpty(p.ObjectPath)) {

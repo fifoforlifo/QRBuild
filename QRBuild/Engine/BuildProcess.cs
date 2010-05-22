@@ -207,14 +207,13 @@ namespace QRBuild.Engine
                     if (completedNode.BuildStatus.Succeeded())
                     {
                         //  Trace creation of each output file.
-                        foreach (var output in completedNode.Translation.GetOutputs())
-                        {
+                        foreach (var output in completedNode.Translation.ExplicitOutputs) {
                             Trace.TraceInformation("Generated Output {0}", output);
                         }
                     }
                     else if (completedNode.BuildStatus.Failed())
                     {
-                        Trace.TraceError("Error while running Translation {0}.", completedNode.Translation.Name);
+                        Trace.TraceError("Error while running Translation for {0}.", completedNode.Translation.PrimaryOutputFilePath);
                         if (!m_buildOptions.ContinueOnError)
                         {
                             return false;
@@ -257,10 +256,8 @@ namespace QRBuild.Engine
             }
             else if (action == BuildAction.Clean)
             {
-                var outputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.GetOutputs());
-                foreach (var output in outputs)
-                {
-                    output.Clean();
+                foreach (var output in buildNode.Translation.ExplicitOutputs) {
+                    File.Delete(output);
                 }
                 File.Delete(buildNode.Translation.DepsCacheFilePath);
                 buildNode.BuildStatus = BuildStatus.ExecuteSucceeded;
@@ -276,8 +273,8 @@ namespace QRBuild.Engine
 
         private BuildStatus ExecuteOneBuildNode(BuildNode buildNode)
         {
-            var inputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.GetInputs());
-            var outputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.GetOutputs());
+            var inputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.ExplicitInputs);
+            var outputs = m_buildGraph.GetBuildFilesForPaths(buildNode.Translation.ExplicitOutputs);
 
             //  depsCache file opened for exclusive access here.  
             using (FileStream depsCacheFileStream = new FileStream(buildNode.Translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))

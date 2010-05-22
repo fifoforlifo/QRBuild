@@ -41,11 +41,8 @@ namespace QRBuild.CSharp
         public void DeepCopy(CSharpCompileParams rhs)
         {
             //-- Meta Options
-            CscPath = rhs.CscPath;
             CompileDir = rhs.CompileDir;
             ExtraArgs = rhs.ExtraArgs;
-            ExtraInputs.AddRange(rhs.ExtraInputs);
-            ExtraOutputs.AddRange(rhs.ExtraOutputs);
             //-- Input Options
             Sources.AddRange(rhs.Sources);
             AssemblyReferences.AddRange(rhs.AssemblyReferences);
@@ -75,14 +72,8 @@ namespace QRBuild.CSharp
         }
 
         //-- Meta Options
-        /// Path to the C# compiler executable (csc.exe on Windows).
-        public string CscPath;
         public string CompileDir;
-        
         public string ExtraArgs;
-        public HashSet<string> ExtraInputs = new HashSet<string>();
-        public HashSet<string> ExtraOutputs = new HashSet<string>();
-
         //-- Input Options
         public readonly HashSet<string> Sources = new HashSet<string>();
         public readonly HashSet<string> AssemblyReferences = new HashSet<string>();

@@ -12,10 +12,6 @@ namespace QRBuild.CSharp
             StringBuilder b = new StringBuilder();
             b.AppendFormat("/nologo ");
             //-- Input Options
-            foreach (string sourceFile in p.Sources)
-            {
-                b.AppendFormat("\"{0}\" ", sourceFile);
-            }
             foreach (string reference in p.AssemblyReferences)
             {
                 b.AppendFormat("/r:\"{0}\" ", reference);
@@ -66,10 +62,7 @@ namespace QRBuild.CSharp
                 b.AppendFormat("/langversion:{0} ", p.LanguageVersion);
             }
             //-- Miscellaneous
-            if (p.NoConfig) 
-            {
-                b.AppendFormat("/noconfig ");
-            }
+            // NOTE: p.NoConfig may not be supplied in a response file
             //-- Advanced
             if (!String.IsNullOrEmpty(p.MainType))
             {
@@ -92,6 +85,11 @@ namespace QRBuild.CSharp
             if (!String.IsNullOrEmpty(p.ExtraArgs)) 
             {
                 b.AppendFormat("{0} ", p.ExtraArgs);
+            }
+
+            //  Source files must go at the very end.
+            foreach (string sourceFile in p.Sources) {
+                b.AppendFormat("\"{0}\" ", sourceFile);
             }
 
             return b.ToString();

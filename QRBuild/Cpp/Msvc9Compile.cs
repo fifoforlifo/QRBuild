@@ -58,18 +58,20 @@ namespace QRBuild.Cpp
             }
         }
 
+        public override string PrimaryOutputFilePath
+        {
+            get { return m_params.ObjectPath; }
+        }
+
         public override string GetCacheableTranslationParameters()
         {
             return m_params.ToArgumentString();
         }
 
-        protected override void ComputeInputs(HashSet<string> inputs)
+        protected override void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs)
         {
             inputs.Add(m_params.SourceFile);
-        }
 
-        protected override void ComputeOutputs(HashSet<string> outputs)
-        {
             string objFilePath = QRPath.ComputeDefaultFilePath(m_params.ObjectPath, m_params.SourceFile, ".obj");
             outputs.Add(objFilePath);
             if (m_params.DebugInfoFormat != Msvc9DebugInfoFormat.None) {
@@ -86,14 +88,10 @@ namespace QRBuild.Cpp
             }
         }
 
-        protected override string GetDefaultDepsCacheFilePath()
+        protected override bool ComputeImplicitInputs(HashSet<string> inputs)
         {
-            if (String.IsNullOrEmpty(m_params.ObjectPath))
-            {
-                return null;
-            }
-            string depsCacheFilePath = m_params.ObjectPath + ".deps";
-            return depsCacheFilePath;
+            //  TODO: preprocess to determine headers
+            return true;
         }
 
         private readonly Msvc9CompileParams m_params;

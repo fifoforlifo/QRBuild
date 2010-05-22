@@ -1,0 +1,11 @@
+BuildTranslation.Execute() implementations should follow these conventions:
+-   Write a response file (if the executable supports it).
+-   Write a shell script that does the following:
+    -   create the right environment
+    -   change directory to the right working directory
+    -   call the build tools, and pipe stdout/stderr to a file
+    Such a shell script would be executable from the (temp) directory
+    where it would reside.  Users can run these scripts at any time
+    for debug purposes.
+-   The output log files can be displayed, or reconstructed into a
+    unified log in post-processing.

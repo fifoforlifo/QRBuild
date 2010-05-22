@@ -59,6 +59,7 @@
     <Compile Include="Engine\BuildTranslation.cs" />
     <Compile Include="Engine\DependencyCache.cs" />
     <Compile Include="Engine\IFileDecider.cs" />
+    <Compile Include="Translations\QRProcess.cs" />
     <Compile Include="FileSizeDateDecider.cs" />
     <Compile Include="IO\QRPath.cs" />
     <Compile Include="IO\QRFileStream.cs" />

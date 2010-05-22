@@ -1,0 +1,65 @@
+BuildProcess algorithm for Build:
+---------------------------------
+
+The build process must execute all Translations in dependency order.
+This means that a Translation may only be executed when all of its
+explicit and implicit dependencies exist.
+
+Explicit dependency - Knowable statically.  It is not necessary to
+inspect the contents of any file to know these; the Translation's
+params are sufficient to determine explicit dependencies.
+
+Implicit dependency - Only knowable when all explicit dependencies exist.
+The explicit dependencies' contents must be inspected to get these.
+
+
+void SerializedBuild(inputTranslations)
+{
+    foreach translation in inputTranslations
+    {
+        translation.UpdateExplicitDependencies(); // cause these to be cached
+    }
+
+    var edRunList, edSleepPool;
+    InitializeConsumerRelationshipsUsingExplicitDependencies(
+        inputTranslations, edRunList, edSleepPool);
+
+    var resolvedRunList, resolvedSleepPool;
+    while (!done)
+    {
+        while (edRunList.Size > 0)
+        {
+            var translation = edRunList.Pop();
+            // potentially expensive call; for example, may call the C preprocessor
+            bool allImplicitDependenciesKnown = translation.UpdateImplicitDependencies();
+            UpdateConsumerRelationshipsForImplicitDependencies(translation, inputTranslations);
+            if (allImplicitDependenciesKnown)
+            {
+                if (translation.Dependencies.Count == 0)
+                    resolvedRunList.Push(translation);
+                else
+                    resolvedSleepPool.Add(translation);
+            }
+            else
+            {
+                if (translation.Dependencies.Count == 0)
+                {
+                    // There is a missing implicit dependency, and it's not possible to generate it.
+                    // Simply let this translation execute, so that a proper build failure is reported.
+                    resolvedRunList.Push(translation);
+                }
+                else
+                {
+                    resolvedSleepPool.Add(translation);
+                }
+            }
+        }
+
+        while (resolvedRunList.Size > 0)
+        {
+            var translation = resolvedRunList.Pop();
+            ExecuteOneBuildNode(translation);
+        }
+    }
+}
+
