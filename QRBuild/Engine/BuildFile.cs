@@ -4,24 +4,14 @@ namespace QRBuild.Engine
 {
     internal sealed class BuildFile
     {
-        public BuildFile(string id)
+        public BuildFile(string path)
         {
-            m_id = id;
+            m_path = path;
         }
 
-        public string Id
+        public string Path
         {
-            get { return m_id; }
-        }
-
-        public bool Exists()
-        {
-            return File.Exists(Id);
-        }
-
-        public void Clean()
-        {
-            File.Delete(Id);
+            get { return m_path; }
         }
 
         /// The BuildNode that generates this Target.
@@ -29,6 +19,6 @@ namespace QRBuild.Engine
         /// in the parent BuildGraph.
         public BuildNode BuildNode;
 
-        readonly string m_id;
+        readonly string m_path;
     }
 }

@@ -314,9 +314,7 @@ namespace QRBuild.Engine
                     //  Write out the new deps cache file.
                     string depsCacheString = DependencyCache.CreateDepsCacheString(
                         buildNode.Translation,
-                        m_buildOptions.FileDecider,
-                        inputs,
-                        outputs);
+                        m_buildOptions.FileDecider);
                     QRFileStream.WriteAllText(depsCacheFileStream, depsCacheString);
                 }
             }
@@ -326,9 +324,9 @@ namespace QRBuild.Engine
         {
             foreach (var buildFile in buildFiles)
             {
-                if (!buildFile.Exists())
+                if (!File.Exists(buildFile.Path))
                 {
-                    Trace.TraceError("Input Target {0} does not exist.", buildFile.Id);
+                    Trace.TraceError("Input Target {0} does not exist.", buildFile.Path);
                     if (!continueOnError)
                     {
                         return false;
@@ -356,9 +354,7 @@ namespace QRBuild.Engine
             //  Create a string representation of the current state of files on disk.
             string currentBuildNodeState = DependencyCache.CreateDepsCacheString(
                 buildNode.Translation,
-                m_buildOptions.FileDecider,
-                inputs,
-                outputs);
+                m_buildOptions.FileDecider);
             //  Compare previous and current state.
             bool filesChanged = (previousBuildNodeState != currentBuildNodeState);
             return filesChanged;

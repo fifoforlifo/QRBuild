@@ -9,51 +9,34 @@ namespace QRBuild.Cpp
 {
     public static class Msvc9CompileExtensions
     {
-        private static string GetAbsPath(
-            string filePath, string workingDir, 
-            string filePathName, string workingDirName)
-        {
-            string fileName = Path.GetFileName(filePath);
-            if (String.IsNullOrEmpty(fileName)) {
-                throw new InvalidOperationException(
-                    String.Format("{0} is not a file, value={1}", filePathName, filePath));
-            }
-            
-            string unresolvedPath;
-            if (Path.IsPathRooted(filePath)) {
-                unresolvedPath = filePath;
-            }
-            else {
-                if (!Path.IsPathRooted(workingDir)) {
-                    throw new InvalidOperationException(
-                        String.Format("{0} is not rooted, cannot compute absolute path for {1}", workingDirName, filePathName));
-                }
-                unresolvedPath = Path.Combine(workingDir, filePath);
-            }
-            string resolvedPath = Path.GetFullPath(unresolvedPath);
-            return resolvedPath;
-        }
-        
         /// Returns a new canonicalized instance of compiler params.
         public static Msvc9CompileParams Canonicalize(this Msvc9CompileParams p)
         {
-            if (p.SourceFile == null) {
-                throw new InvalidOperationException("C/C++ SourceFile not specified");
+            Msvc9CompileParams o = new Msvc9CompileParams();
+            //-- Meta
+            if (String.IsNullOrEmpty(p.VcBinDir)) {
+                throw new InvalidOperationException("VcBinDir not specified");
             }
+            o.VcBinDir = QRPath.GetAbsolutePath(p.VcBinDir, p.CompileDir);
+            o.ToolChain = p.ToolChain;
 
             //-- Input and Output Options
-            Msvc9CompileParams o = new Msvc9CompileParams();
-            o.SourceFile = GetAbsPath(p.SourceFile, p.CompileDir, "SourceFile", "CompileDir");
+            if (String.IsNullOrEmpty(p.SourceFile)) {
+                throw new InvalidOperationException("C/C++ SourceFile not specified");
+            }
+            o.SourceFile = QRPath.GetAbsolutePath(p.SourceFile, p.CompileDir);
             o.CompileDir = p.CompileDir;
+            o.Compile = p.Compile;
             if (p.Compile) {
-                o.ObjectPath = QRPath.ComputeDefaultFilePath(p.ObjectPath, p.SourceFile, ".obj");
-                o.PdbPath = QRPath.ComputeDefaultFilePath(p.PdbPath, p.SourceFile, ".pdb");
+                o.ObjectPath = QRPath.ComputeDefaultFilePath(p.ObjectPath, p.SourceFile, ".obj", p.CompileDir);
+                o.PdbPath = QRPath.ComputeDefaultFilePath(p.PdbPath, p.SourceFile, ".pdb", p.CompileDir);
             }
             o.AsmOutputFormat = p.AsmOutputFormat;
             if (p.AsmOutputFormat != Msvc9AsmOutputFormat.None) {
-                o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm");
+                o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm", p.CompileDir);
             }
             o.ClrSupport = p.ClrSupport;
+            o.ExtraArgs = p.ExtraArgs;
 
             //-- Optimization
             o.OptLevel = p.OptLevel;
@@ -80,10 +63,10 @@ namespace QRBuild.Cpp
             o.Defines.AddRange(p.Defines);
             o.Undefines.AddRange(p.Undefines);
             o.UndefineAllPredefinedMacros = p.UndefineAllPredefinedMacros;
-            o.IncludeDirs.AddRange(p.IncludeDirs);
-            o.AssemblySearchDirs.AddRange(p.AssemblySearchDirs);
-            o.ForcedIncludes.AddRange(p.ForcedIncludes);
-            o.ForcedUsings.AddRange(p.ForcedUsings);
+            o.IncludeDirs.AddRangeAsAbsolutePaths(p.IncludeDirs, p.CompileDir);
+            o.AssemblySearchDirs.AddRangeAsAbsolutePaths(p.AssemblySearchDirs, p.CompileDir);
+            o.ForcedIncludes.AddRangeAsAbsolutePaths(p.ForcedIncludes, p.CompileDir);
+            o.ForcedUsings.AddRangeAsAbsolutePaths(p.ForcedUsings, p.CompileDir);
             o.IgnoreStandardPaths = p.IgnoreStandardPaths;
 
             //-- Language
@@ -104,9 +87,11 @@ namespace QRBuild.Cpp
             o.TreatWarningsAsErrors = p.TreatWarningsAsErrors;
             
             if (p.CreatePch) {
-                o.CreatePchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch");
+                o.CreatePchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch", p.CompileDir);
             }
-            o.UsePchFilePath = p.UsePchFilePath;
+            if (!String.IsNullOrEmpty(p.UsePchFilePath)) {
+                o.UsePchFilePath = QRPath.GetAbsolutePath(p.UsePchFilePath, p.CompileDir);
+            }
 
             return o;
         }
@@ -115,19 +100,16 @@ namespace QRBuild.Cpp
         public static string ToArgumentString(this Msvc9CompileParams p)
         {
             StringBuilder b = new StringBuilder();
-            if (p.SourceFile == null) {
-                throw new InvalidOperationException("C/C++ SourceFile not specified");
-            }
-            b.AppendFormat("{0} ", p.SourceFile);
+            b.AppendFormat("\"{0}\" ", p.SourceFile);
             b.Append("/nologo ");   // do not print logo to stdout
             b.Append("/FC ");       // show full path in diagnostic messages
 
             //-- Input and Output Options
             if (!String.IsNullOrEmpty(p.ObjectPath)) {
-                b.AppendFormat("/c /Fo{0} ", p.ObjectPath);
+                b.AppendFormat("/c /Fo\"{0}\" ", p.ObjectPath);
             }
             if (!String.IsNullOrEmpty(p.PdbPath)) {
-                b.AppendFormat("/Fd{0} ", p.PdbPath);
+                b.AppendFormat("/Fd\"{0}\" ", p.PdbPath);
             }
             switch (p.AsmOutputFormat)
             {
@@ -145,7 +127,7 @@ namespace QRBuild.Cpp
                     break;
             }                
             if (!String.IsNullOrEmpty(p.AsmOutputPath)) {
-                b.AppendFormat("/Fa{0} ", p.AsmOutputPath);
+                b.AppendFormat("/Fa\"{0}\" ", p.AsmOutputPath);
             }
             switch (p.ClrSupport)
             {
@@ -369,20 +351,53 @@ namespace QRBuild.Cpp
 
             //-- PreCompiled Headers (PCH)
             if (p.CreatePch) {
-                b.AppendFormat("/Yc{0} ", p.SourceFile);
-
-                if (String.IsNullOrEmpty(p.CreatePchFilePath)) {
-                    string createPchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch");
-                    b.AppendFormat("/Fp{0} ", createPchFilePath);
-                }
-                else {
-                    string createPchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch");
-                    b.AppendFormat("/Fp{0} ", createPchFilePath);
-                }
+                b.AppendFormat("/Yc\"{0}\" ", p.SourceFile);
+                b.AppendFormat("/Fp\"{0}\" ", p.CreatePchFilePath);
             }
             if (!String.IsNullOrEmpty(p.UsePchFilePath)) {
-                string usePchFilePath = QRPath.ComputeDefaultFilePath(p.UsePchFilePath, p.SourceFile, ".pch");
-                b.AppendFormat("/Yu{0} ", usePchFilePath);
+                b.AppendFormat("/Yu\"{0}\" ", p.UsePchFilePath);
+            }
+
+            b.Append(p.ExtraArgs);
+
+            return b.ToString();
+        }
+
+        public static string ToPreProcessorArgumentString(this Msvc9CompileParams p, bool showIncludes)
+        {
+            StringBuilder b = new StringBuilder();
+            b.AppendFormat("{0} ", p.SourceFile);
+            b.Append("/nologo ");   // do not print logo to stdout
+            b.Append("/FC ");       // show full path in diagnostic messages
+            b.Append("/E ");        // preprocess to stdout
+            if (showIncludes) {
+                b.Append("/showIncludes ");
+            }
+
+            //-- PreProcessor
+            foreach (string define in p.Defines) {
+                b.AppendFormat("/D{0} ", define);
+            }
+            foreach (string undefine in p.Undefines) {
+                b.AppendFormat("/U{0} ", undefine);
+            }
+            if (p.UndefineAllPredefinedMacros) {
+                b.Append("/u ");
+            }
+            foreach (string includeDir in p.IncludeDirs) {
+                b.AppendFormat("/I\"{0}\" ", includeDir);
+            }
+            foreach (string assemblySearchDir in p.AssemblySearchDirs) {
+                b.AppendFormat("/AI\"{0}\" ", assemblySearchDir);
+            }
+            foreach (string forcedInclude in p.ForcedIncludes) {
+                b.AppendFormat("/FI\"{0}\" ", forcedInclude);
+            }
+            foreach (string forcedUsing in p.ForcedUsings) {
+                b.AppendFormat("/FU\"{0}\" ", forcedUsing);
+            }
+            if (p.IgnoreStandardPaths) {
+                b.Append("/X ");
             }
 
             return b.ToString();

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using QRBuild.Cpp;
 using QRBuild.CSharp;
 using QRBuild.Engine;
 using QRBuild.IO;
@@ -77,7 +78,7 @@ ENDLOCAL
             string batPath = @"K:\work\code\cpp\0002_test\bldgen2.bat";
             File.WriteAllText(batPath, bat, Encoding.ASCII);
 
-            using (QRProcess process = QRProcess.LaunchBatchFile(batPath, Path.GetDirectoryName(batPath)))
+            using (QRProcess process = QRProcess.LaunchBatchFile(batPath, Path.GetDirectoryName(batPath), false, ""))
             {
                 Console.WriteLine("launched pid={0}", process.Id);
                 process.WaitHandle.WaitOne();
@@ -85,14 +86,15 @@ ENDLOCAL
             string log = File.ReadAllText(logPath);
             Console.Write(log);
         }
-        
-        static void Main(string[] args)
+
+        static void TestCscCompile()
         {
             var cscp = new CSharpCompileParams();
             cscp.CompileDir = @"K:\work\code\C#\foo";
             string sourceFile = @"K:\work\code\C#\foo\Blah.cs";
             cscp.Sources.Add(sourceFile);
             cscp.OutputFilePath = QRPath.ChangeExtension(sourceFile, ".exe");
+            cscp.FrameworkVersion = "v3.5";
             cscp.Platform = CSharpPlatforms.AnyCpu;
             cscp.Debug = true;
 
@@ -101,17 +103,47 @@ ENDLOCAL
             var csc = new CSharpCompile(buildGraph, cscp);
             csc.Execute();
 
+            csc.UpdateExplicitIO();
+            csc.UpdateImplicitIO();
+
+            string depsCache = DependencyCache.CreateDepsCacheString(csc, new FileSizeDateDecider());
+            File.WriteAllText(csc.PrimaryOutputFilePath + "__qr__.deps", depsCache);
+        }
+
+        static void TestMsvc9Compile()
+        {
+            var ccp = new Msvc9CompileParams();
+            ccp.VcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
+            ccp.ToolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            ccp.CompileDir = @"K:\work\code\cpp\0002_test";
+            ccp.SourceFile = @"test02.cpp";
+            ccp.Compile = true;
+            ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+
+            var buildGraph = new BuildGraph();
+
+            var cc = new Msvc9Compile(buildGraph, ccp);
+            cc.Execute();
+
+            cc.UpdateExplicitIO();
+            cc.UpdateImplicitIO();
+
+            string depsCache = DependencyCache.CreateDepsCacheString(cc, new FileSizeDateDecider());
+            File.WriteAllText(cc.PrimaryOutputFilePath + "__qr__.deps", depsCache);
+        }
+
+        static void Main(string[] args)
+        {
+
 #if false
+            TestCscCompile();
+
             TestLaunchBatchFile();
 
             TestQRProcess();
 #endif
 
-            {
-                string a = Path.GetDirectoryName("a/b.txt");
-                string nodir = Path.GetDirectoryName("c.txt");
-                string nodir2 = Path.GetDirectoryName("a/");
-            }
+            TestMsvc9Compile();
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();

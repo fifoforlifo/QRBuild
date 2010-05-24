@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -18,11 +19,32 @@ namespace QRBuild.IO
             return newFilePath;
         }
 
-        public static string ComputeDefaultFilePath(string pathOrDir, string filePath, string newExtension)
+        public static string GetCanonical(string path)
+        {
+            string absPath = Path.GetFullPath(path);
+            string lowerAbsPath = absPath.ToLower();
+            return lowerAbsPath;
+        }
+
+        public static string GetAbsolutePath(string path, string currentDir)
+        {
+            if (Path.IsPathRooted(path)) {
+                string absolutePath = QRPath.GetCanonical(path);
+                return absolutePath;
+            }
+            else {
+                string fp2 = Path.Combine(currentDir, path);
+                string absolutePath = QRPath.GetCanonical(fp2);
+                return absolutePath;
+            }
+        }
+
+        public static string ComputeDefaultFilePath(string pathOrDir, string filePath, string newExtension, string currentDir)
         {            
             if (String.IsNullOrEmpty(pathOrDir)) {
                 string path = ChangeExtension(filePath, newExtension);
-                return path;
+                string absPath = GetAbsolutePath(path, currentDir);
+                return absPath;
             }
             else {
                 if (pathOrDir[pathOrDir.Length - 1] == Path.DirectorySeparatorChar) {
@@ -30,12 +52,22 @@ namespace QRBuild.IO
                     string fileNameNoExt = Path.GetFileNameWithoutExtension(filePath);
                     string pathNoExt = Path.Combine(pathOrDir, fileNameNoExt);
                     string path = pathNoExt + newExtension;
-                    return path;
+                    string absPath = GetAbsolutePath(path, currentDir);
+                    return absPath;
                 }
                 else {
                     // pathOrDir represents a file.
-                    return pathOrDir;
+                    string absPath = GetAbsolutePath(pathOrDir, currentDir);
+                    return absPath;
                 }
+            }
+        }
+
+        public static void AddRangeAsAbsolutePaths(this ICollection<string> dest, IEnumerable<string> src, string currentDir)
+        {
+            foreach (string path in src) {
+                string absPath = GetAbsolutePath(path, currentDir);
+                dest.Add(path);
             }
         }
     }

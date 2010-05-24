@@ -58,6 +58,10 @@ namespace QRBuild.Engine
         {
             get { return m_implicitInputs; }
         }
+        public HashSet<string> ImplicitOutputs
+        {
+            get { return m_implicitOutputs; }
+        }
 
         /// Causes ExplicitInputs and ExplicitOutputs to be updated.
         public void UpdateExplicitIO()
@@ -72,7 +76,8 @@ namespace QRBuild.Engine
         public bool UpdateImplicitIO()
         {
             ImplicitInputs.Clear();
-            bool implicitInputsKnown = ComputeImplicitInputs(ImplicitInputs);
+            ImplicitOutputs.Clear();
+            bool implicitInputsKnown = ComputeImplicitIO(ImplicitInputs, ImplicitOutputs);
             return implicitInputsKnown;
         }
 
@@ -119,8 +124,8 @@ namespace QRBuild.Engine
         /// Implementors compute explicit inputs and outputs.
         protected abstract void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs);
 
-        /// Implementors compute implicit inputs.
-        protected abstract bool ComputeImplicitInputs(HashSet<string> inputs);
+        /// Implementors compute implicit inputs and outputs.
+        protected abstract bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs);
 
 
         ///-----------------------------------------------------------------

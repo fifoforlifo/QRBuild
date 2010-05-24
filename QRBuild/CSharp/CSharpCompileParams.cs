@@ -33,47 +33,11 @@ namespace QRBuild.CSharp
         {
         }
 
-        public CSharpCompileParams(CSharpCompileParams rhs)
-        {
-            DeepCopy(rhs);
-        }
-
-        public void DeepCopy(CSharpCompileParams rhs)
-        {
-            //-- Meta Options
-            CompileDir = rhs.CompileDir;
-            ExtraArgs = rhs.ExtraArgs;
-            //-- Input Options
-            Sources.AddRange(rhs.Sources);
-            AssemblyReferences.AddRange(rhs.AssemblyReferences);
-            InputModules.AddRange(rhs.InputModules);
-            //-- Output Options
-            OutputFilePath = rhs.OutputFilePath;
-            TargetFormat = rhs.TargetFormat;
-            Platform = rhs.Platform;
-            //-- Code Generation
-            Debug = rhs.Debug;
-            Optimize = rhs.Optimize;
-            //-- Errors and Warnings
-            WarnAsError = rhs.WarnAsError;
-            WarnLevel = rhs.WarnLevel;
-            //-- Language
-            Checked = rhs.Checked;
-            Unsafe = rhs.Unsafe;
-            Defines.AddRange(rhs.Defines);
-            LanguageVersion = rhs.LanguageVersion;
-            //-- Miscellaneous
-            NoConfig = rhs.NoConfig;
-            //-- Advanced
-            MainType = rhs.MainType;
-            FullPaths = rhs.FullPaths;
-            PdbFilePath = rhs.PdbFilePath;
-            ModuleAssemblyName = rhs.ModuleAssemblyName;
-        }
-
         //-- Meta Options
         public string CompileDir;
+        public string FrameworkVersion;
         public string ExtraArgs;
+        
         //-- Input Options
         public readonly HashSet<string> Sources = new HashSet<string>();
         public readonly HashSet<string> AssemblyReferences = new HashSet<string>();

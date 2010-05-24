@@ -3,10 +3,70 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using QRBuild.IO;
+using QRBuild.Linq;
+
 namespace QRBuild.CSharp
 {
     public static class CSharpCompileExtensions
     {
+        public static CSharpCompileParams Canonicalize(this CSharpCompileParams p)
+        {
+            CSharpCompileParams o = new CSharpCompileParams();
+            //-- Meta Options
+            if (String.IsNullOrEmpty(p.CompileDir)) {
+                throw new InvalidOperationException("C# CompileDir not specified");
+            }
+            o.CompileDir = p.CompileDir;
+            if (String.IsNullOrEmpty(p.FrameworkVersion)) {
+                throw new InvalidOperationException("C# FrameworkVersion not specified");
+            }
+            o.FrameworkVersion = p.FrameworkVersion;
+            o.ExtraArgs = p.ExtraArgs;
+            //-- Input Options
+            if (p.Sources.Count == 0) {
+                throw new InvalidOperationException("C# Sources not specified");
+            }
+            foreach (string path in p.Sources) {
+                string absPath = QRPath.GetAbsolutePath(path, p.CompileDir);
+                o.Sources.Add(absPath);
+            }
+            foreach (string path in p.AssemblyReferences) {
+                string absPath = QRPath.GetAbsolutePath(path, p.CompileDir);
+                o.AssemblyReferences.Add(absPath);
+            }
+            foreach (string path in p.InputModules) {
+                string absPath = QRPath.GetAbsolutePath(path, p.CompileDir);
+                o.InputModules.Add(absPath);
+            }
+            //-- Output Options
+            if (String.IsNullOrEmpty(p.OutputFilePath)) {
+                throw new InvalidOperationException("C# compile OutputFilePath not specified");
+            }
+            o.OutputFilePath = QRPath.GetAbsolutePath(p.OutputFilePath, p.CompileDir);
+            o.TargetFormat = p.TargetFormat;
+            o.Platform = p.Platform;
+            //-- Code Generation
+            o.Debug = p.Debug;
+            o.Optimize = p.Optimize;
+            //-- Errors and Warnings
+            o.WarnAsError = p.WarnAsError;
+            o.WarnLevel = p.WarnLevel;
+            //-- Language
+            o.Checked = p.Checked;
+            o.Unsafe = p.Unsafe;
+            o.Defines.AddRange(p.Defines);
+            o.LanguageVersion = p.LanguageVersion;
+            //-- Miscellaneous
+            o.NoConfig = p.NoConfig;
+            //-- Advanced
+            o.MainType = p.MainType;
+            o.FullPaths = p.FullPaths;
+            o.PdbFilePath = p.PdbFilePath;
+            o.ModuleAssemblyName = p.ModuleAssemblyName;
+            return o;
+        }
+        
         public static string ToArgumentString(this CSharpCompileParams p)
         {
             StringBuilder b = new StringBuilder();

@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
-
 using QRBuild.Engine;
 using QRBuild.IO;
 using QRBuild.Linq;
@@ -18,7 +15,7 @@ namespace QRBuild.CSharp
         public CSharpCompile(BuildGraph buildGraph, CSharpCompileParams p)
             : base(buildGraph)
         {
-            m_params = p;
+            m_params = p.Canonicalize();
         }
 
         public override bool Execute()
@@ -27,33 +24,47 @@ namespace QRBuild.CSharp
             string responseFilePath = GetResponseFilePath();
             File.WriteAllText(responseFilePath, responseFile);
 
-            string outputPath = GetBuildLogFilePath();
-
-            string batchFile = String.Format(@"
-SETLOCAL
-
-cd ""{0}""
-
-""{1}"" {2} @""{3}""  > ""{4}""  2>&1
-
-ENDLOCAL
-",
-                m_params.CompileDir,
-                @"C:\Windows\Microsoft.NET\Framework\v3.5\csc.exe",
-                m_params.NoConfig ? "/noconfig" : "", 
-                responseFilePath, 
-                outputPath);
+            string logFilePath = GetBuildLogFilePath();
+            string cscPath = GetCscPath();
 
             string batchFilePath = GetBatchFilePath();
+            string batchFile = String.Format(@"
+@echo off
+REM If run with an argument, the batch file calls itself and redirects stdout,stderr to log file.
+IF _%1 NEQ _ (
+    cmd /C  {0} > {1}  2>&1
+    EXIT /B %ERRORLEVEL%
+)
+
+@echo {2}
+SETLOCAL
+
+cd ""{3}""
+
+""{4}"" {5} @""{6}""
+
+EXIT /B %ERRORLEVEL%
+",
+                batchFilePath,
+                logFilePath,
+                "on" /* TODO: logging verbosity could control this */,
+                m_params.CompileDir,
+                cscPath,
+                m_params.NoConfig ? "/noconfig" : "", 
+                responseFilePath);
+
             File.WriteAllText(batchFilePath, batchFile);
 
-            QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir);
-            process.WaitHandle.WaitOne();
+            using (QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir, false, " redirect_output"))
+            {
+                process.WaitHandle.WaitOne();
 
-            string output = File.ReadAllText(outputPath);
-            Console.Write(output);
+                string output = File.ReadAllText(logFilePath);
+                Console.Write(output);
 
-            return process.GetExitCode() == 0;
+                bool success = process.GetExitCode() == 0;
+                return success;
+            }
         }
 
         public override string PrimaryOutputFilePath
@@ -78,7 +89,7 @@ ENDLOCAL
             }
         }
 
-        protected override bool ComputeImplicitInputs(HashSet<string> inputs)
+        protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
         {
             //  C# does not have implicit dependencies.
             return true;
@@ -88,6 +99,10 @@ ENDLOCAL
         {
             return PrimaryOutputFilePath + "__qr__.bat";
         }
+        private string GetRedirectionBatchFilePath()
+        {
+            return PrimaryOutputFilePath + "__qr__.redirect.bat";
+        }
         private string GetResponseFilePath()
         {
             return PrimaryOutputFilePath + "__qr__.rsp";
@@ -95,6 +110,14 @@ ENDLOCAL
         private string GetBuildLogFilePath()
         {
             return PrimaryOutputFilePath + "__qr__.log";
+        }
+        private string GetCscPath()
+        {
+            string runtimeDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory();
+            string s1 = Path.Combine(runtimeDir, "..");
+            string s2 = Path.Combine(s1, m_params.FrameworkVersion);
+            string cscPath = Path.Combine(s2, "csc.exe");
+            return cscPath;
         }
 
         readonly CSharpCompileParams m_params;

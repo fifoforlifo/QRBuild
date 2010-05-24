@@ -1,5 +1,5 @@
-BuildProcess algorithm for Build:
----------------------------------
+BuildProcess algorithm for handling implict inputs:
+---------------------------------------------------
 
 The build process must execute all Translations in dependency order.
 This means that a Translation may only be executed when all of its
@@ -11,6 +11,9 @@ params are sufficient to determine explicit dependencies.
 
 Implicit dependency - Only knowable when all explicit dependencies exist.
 The explicit dependencies' contents must be inspected to get these.
+
+Handling implicit inputs requires an iterative process, but the iteration
+is only for a single Translation.
 
 
 void SerializedBuild(inputTranslations)
@@ -62,4 +65,74 @@ void SerializedBuild(inputTranslations)
         }
     }
 }
+
+
+
+
+BuildProcess algorithm for handling implict outputs:
+----------------------------------------------------
+
+Implicit outputs are a real problem.  By the time an implicit output
+is determined, other Translations that depended on it may have already Executed,
+in which case those other Translations are now out-of-date.
+
+One solution is to iterate all BuildNodes when new ImplicitOutputs are
+discovered, and update consumer relationships.  Then all dependent
+nodes and their dependents must be readded to the BuildProcess
+if they have already completed.  So a multi-Translation iterative step
+is introduced; in the worst case, the whole BuildGraph would be
+iterated multiple times.
+
+To avoid infinitely iterating, cycles must be tested for whenever a new 
+dependency relationship is about to be added.  This should be done when
+updating the dependent nodes, since that algorithm would run forever
+without it.
+
+
+Since dependency-relationships will be created during a build process with such
+an algorithm, the threading-model requirements for BuildNode are more difficult
+(compared to a build process where all outputs are known statically).
+
+    Implicit outputs + optimizing Incremental Builds
+    ------------------------------------------------
+    To improve performance for incremental builds, a Translation could load
+    the previous version of the DepsCache file, and advertise the implicit IOs
+    from the previous build at the beginning of the BuildProcess (during static
+    dependency analysis).
+    
+    This introduces new cases to examine:
+    1.  If new implicit outputs are generated, multiple Translations may need to be re-executed anyways.
+        OK.
+    2.  If some implicit outputs that were previously generated are no longer generated,
+        then the Translation essentially "lied" and caused false dependency relationships.
+        a)  If no other Translation generates the file:
+                If other Translation require the file as input, 
+                    then it will have a normal build error.
+                Else
+                    nobody cares about the file, so nothing bad happens.
+            This behavior is the same as when any non-generated file is an input, and does not exist.
+            OK.
+        b)  If other Translation generates the file:
+            1.  If it's an explicit output, the explicit output should win.
+                Requires special detection during static analysis.
+            2.  If it's a previous implicit output,
+                    at least one Translation is a liar  OR  
+                    the BuildGraph is invalid [more than one Translation truly generates the same file].
+                Either way, no-one can win in this case, it must be resolved during the build process as normal.
+                Requires special detection during static analysis.
+            3.  If it's a current implicit output, the current implicit output should win.
+                Requires detection during build process, and dependencies must be *changed*.
+
+
+
+Memory Concerns
+---------------
+_MAXPATH on Windows is 260 characters.  So if we do some worst-case estimates where
+each file path is 256 characters and in UCS-2 encoding, each path is 512 bytes.
+So 1GB is needed to hold 2 million file paths.
+More realistically, if average path length is 166 characters, 1GB will hold 3 million paths.
+
+This memory requirement can be drastically reduced by keep file paths in memory
+in Trie form, and generating a string representation of an absolute path only when
+needed for file-system accesses.
 

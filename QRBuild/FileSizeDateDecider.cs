@@ -11,15 +11,15 @@ namespace QRBuild
         public string GetVersionStamp(string filePath)
         {
             FileInfo fileInfo = new FileInfo(filePath);
-            if (!fileInfo.Exists)
-            {
+            if (!fileInfo.Exists) {
                 return NonExistent;
             }
 
+            long lastWriteTimeUtc = fileInfo.LastWriteTimeUtc.ToFileTimeUtc();
             string stamp = string.Format(
-                "{{{0:x}, {1:x}}}",
+                "{{size={0}, date={1}}}",
                 fileInfo.Length,
-                fileInfo.LastAccessTimeUtc.Ticks);
+                lastWriteTimeUtc);
             return stamp;
         }
     }

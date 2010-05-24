@@ -3,6 +3,18 @@ using System.Collections.Generic;
 
 namespace QRBuild.Cpp
 {
+    /// 
+    public enum Msvc9ToolChain
+    {
+        /// x86-tools that generate x86 output
+        ToolsX86TargetX86,
+        /// x86-tools that generate amd64 output
+        /// Also known as cross-compiler or "cross-build" tools.
+        ToolsX86TargetAmd64,
+        /// amd64-tools that generate amd64 output
+        ToolsAmd64TargetAmd64,
+    }
+
     public enum Msvc9ClrSupport
     {
         None,
@@ -102,6 +114,13 @@ namespace QRBuild.Cpp
         {
         }
 
+        //-- Meta
+        /// Typically this will be 
+        /// 32-bit OS : %ProgramFiles%\Microsoft Visual Studio 9.0\VC\bin
+        /// 64-bit OS : %ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin
+        public string VcBinDir;
+        public Msvc9ToolChain ToolChain;
+
         //-- Input and Output Options
         public string SourceFile;
         public string CompileDir;
@@ -111,6 +130,7 @@ namespace QRBuild.Cpp
         public Msvc9AsmOutputFormat AsmOutputFormat;
         public string AsmOutputPath;
         public Msvc9ClrSupport ClrSupport;
+        public string ExtraArgs;
 
         //-- Optimization
         public Msvc9OptLevel OptLevel;

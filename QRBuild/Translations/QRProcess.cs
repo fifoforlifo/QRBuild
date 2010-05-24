@@ -70,14 +70,23 @@ namespace QRBuild.Translations
         /// This function calls CreateProcess directly, and ensures that 
         /// bInheritHandles=false, which prevents handle leakage into 
         /// child processes.
-        public static QRProcess LaunchBatchFile(string batchFilePath, string workingDir)
+        public static QRProcess LaunchBatchFile(
+            string batchFilePath, 
+            string workingDir,
+            bool unicode, 
+            string extraCmdCommandLine)
         {
             string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
             string cmdPath = Path.Combine(systemPath, "cmd.exe");
 
             StringBuilder commandline = new StringBuilder();
-            commandline.Append(" /C "); // terminate after executing
-            commandline.AppendFormat("\"{0}\" ", batchFilePath);
+            if (unicode) {
+                commandline.Append("/U ");
+            }
+            commandline.Append("/C "); // terminate after executing
+            commandline.AppendFormat("\"{0} {1}\" ", 
+                batchFilePath,
+                String.IsNullOrEmpty(extraCmdCommandLine) ? "" : extraCmdCommandLine);
 
             uint dwCreationFlags = CREATE_NEW_CONSOLE | NORMAL_PRIORITY_CLASS;
 
