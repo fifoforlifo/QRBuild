@@ -1,4 +1,4 @@
-﻿namespace QRBuild.Engine
+﻿namespace QRBuild
 {
     /// Indicates the status of a BuildNode
     internal enum BuildStatus

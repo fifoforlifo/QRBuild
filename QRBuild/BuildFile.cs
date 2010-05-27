@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     internal sealed class BuildFile
     {

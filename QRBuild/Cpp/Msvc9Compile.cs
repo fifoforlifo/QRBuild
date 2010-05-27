@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-using QRBuild.Engine;
 using QRBuild.IO;
 using QRBuild.Linq;
 using QRBuild.Translations;

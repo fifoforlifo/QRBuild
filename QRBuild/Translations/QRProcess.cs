@@ -6,7 +6,6 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
-using QRBuild.Engine;
 
 namespace QRBuild.Translations
 {

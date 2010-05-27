@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     public static class DependencyCache
     {

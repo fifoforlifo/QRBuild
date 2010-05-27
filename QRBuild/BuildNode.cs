@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     /// BuildNode is 1:1 with BuildTranslation instance.
     /// BuildNode tracks dynamic state during a BuildProcess execution.

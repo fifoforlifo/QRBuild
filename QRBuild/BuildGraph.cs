@@ -5,7 +5,7 @@ using System.Linq;
 
 using QRBuild.IO;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     /// 
     public sealed class BuildGraph

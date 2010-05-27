@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     /// Implementors of this interface decide how file state is represented in DepsCaches.
     /// They are used during the build to determine whether nodes are up-to-date.

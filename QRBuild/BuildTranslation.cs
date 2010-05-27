@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using QRBuild.Linq;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     public abstract class BuildTranslation
     {

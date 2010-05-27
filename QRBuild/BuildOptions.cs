@@ -1,4 +1,4 @@
-﻿namespace QRBuild.Engine
+﻿namespace QRBuild
 {
     public sealed class BuildOptions
     {

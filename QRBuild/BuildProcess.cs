@@ -7,7 +7,7 @@ using System.Threading;
 using QRBuild.IO;
 using QRBuild.Linq;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     internal class BuildProcess
     {

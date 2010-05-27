@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QRBuild.Engine
+namespace QRBuild
 {
     public sealed class BuildResults
     {
