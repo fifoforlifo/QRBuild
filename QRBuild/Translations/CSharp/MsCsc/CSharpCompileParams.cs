@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using QRBuild.Linq;
 
-namespace QRBuild.CSharp
+namespace QRBuild.Translations.CSharp.MsCsc
 {
     /// Values that can be passed to /target.
     public static class CSharpTargetFormats

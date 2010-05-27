@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace QRBuild.Cpp
+namespace QRBuild.Translations.Cpp.Msvc9
 {
     /// 
     public enum Msvc9ToolChain
