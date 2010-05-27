@@ -87,6 +87,12 @@ EXIT /B %ERRORLEVEL%
             if (!String.IsNullOrEmpty(m_params.PdbFilePath)) {
                 outputs.Add(m_params.PdbFilePath);
             }
+#if false
+            // TODO: need a way to make this info available for Clean without polluting Build
+            outputs.Add(GetBatchFilePath());
+            outputs.Add(GetResponseFilePath());
+            outputs.Add(GetBuildLogFilePath());
+#endif
         }
 
         protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
@@ -98,10 +104,6 @@ EXIT /B %ERRORLEVEL%
         private string GetBatchFilePath()
         {
             return PrimaryOutputFilePath + "__qr__.bat";
-        }
-        private string GetRedirectionBatchFilePath()
-        {
-            return PrimaryOutputFilePath + "__qr__.redirect.bat";
         }
         private string GetResponseFilePath()
         {

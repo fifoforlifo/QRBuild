@@ -129,7 +129,37 @@ ENDLOCAL
             cc.UpdateImplicitIO();
 
             string depsCache = DependencyCache.CreateDepsCacheString(cc, new FileSizeDateDecider());
-            File.WriteAllText(cc.PrimaryOutputFilePath + "__qr__.deps", depsCache);
+            File.WriteAllText(cc.DepsCacheFilePath, depsCache);
+
+            HashSet<string> implicitInputs = new HashSet<string>();
+            HashSet<string> implicitOutputs = new HashSet<string>();
+            DependencyCache.LoadDepsCacheImplicitIO(cc.DepsCacheFilePath, implicitInputs, implicitOutputs);
+        }
+
+        static void TestSingleNodeGraph()
+        {
+            var ccp = new Msvc9CompileParams();
+            ccp.VcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
+            ccp.ToolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            ccp.CompileDir = @"K:\work\code\cpp\0002_test";
+            ccp.SourceFile = @"test02.cpp";
+            ccp.Compile = true;
+            ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+
+            var buildGraph = new BuildGraph();
+
+            var cc = new Msvc9Compile(buildGraph, ccp);
+
+            BuildOptions buildOptions = new BuildOptions();
+            buildOptions.ContinueOnError = false;
+            buildOptions.FileDecider = new FileSizeDateDecider();
+            buildOptions.MaxConcurrency = 1;
+
+            string[] targets = { @"K:\work\code\cpp\0002_test\test02.obj" };
+            BuildResults buildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+            Console.WriteLine("BuildResults.Success          = {0}", buildResults.Success);
+            Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
+            Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
         }
 
         static void Main(string[] args)
@@ -141,9 +171,11 @@ ENDLOCAL
             TestLaunchBatchFile();
 
             TestQRProcess();
-#endif
 
             TestMsvc9Compile();
+#endif
+
+            TestSingleNodeGraph();
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();

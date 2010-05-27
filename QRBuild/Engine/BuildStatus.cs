@@ -30,5 +30,10 @@
         {
             return (BuildStatus.FailMin < status && status < BuildStatus.FailMax);
         }
+
+        public static bool Executed(this BuildStatus status)
+        {
+            return Succeeded(status) || Failed(status);
+        }
     }
 }

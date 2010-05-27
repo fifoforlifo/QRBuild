@@ -26,6 +26,7 @@ namespace QRBuild.IO
             sw.BaseStream.Seek(0, SeekOrigin.Begin);
             sw.BaseStream.SetLength(0);
             sw.Write(text);
+            sw.Flush();
         }
     }
 }

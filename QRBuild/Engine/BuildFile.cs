@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace QRBuild.Engine
 {
@@ -19,6 +20,9 @@ namespace QRBuild.Engine
         /// in the parent BuildGraph.
         public BuildNode BuildNode;
 
-        readonly string m_path;
+        /// The set of all nodes that depend on this file.
+        public readonly HashSet<BuildNode> Consumers = new HashSet<BuildNode>();
+
+        readonly string m_path;     
     }
 }
