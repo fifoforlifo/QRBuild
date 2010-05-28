@@ -7,6 +7,7 @@ using System.Text;
 
 using QRBuild.Translations.Cpp.Msvc9;
 using QRBuild.Translations.CSharp.MsCsc;
+using QRBuild.Translations.IO;
 using QRBuild.IO;
 using QRBuild.Translations;
 
@@ -106,7 +107,7 @@ ENDLOCAL
             csc.UpdateImplicitIO();
 
             string depsCache = DependencyCache.CreateDepsCacheString(csc, new FileSizeDateDecider());
-            File.WriteAllText(csc.PrimaryOutputFilePath + "__qr__.deps", depsCache);
+            File.WriteAllText(csc.BuildFileBaseName + "__qr__.deps", depsCache);
         }
 
         static void TestMsvc9Compile()
@@ -137,6 +138,8 @@ ENDLOCAL
 
         static void TestSingleNodeGraph()
         {
+            var buildGraph = new BuildGraph();
+
             var ccp = new Msvc9CompileParams();
             ccp.VcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
             ccp.ToolChain = Msvc9ToolChain.ToolsX86TargetX86;
@@ -144,8 +147,6 @@ ENDLOCAL
             ccp.SourceFile = @"test02.cpp";
             ccp.Compile = true;
             ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
-
-            var buildGraph = new BuildGraph();
 
             var cc = new Msvc9Compile(buildGraph, ccp);
 
@@ -161,6 +162,38 @@ ENDLOCAL
             Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
         }
 
+        static void TestDependencyChain()
+        {
+            var buildGraph = new BuildGraph();
+            
+            string testDir = @"K:\work\code\C#\QRBuild\Tests\A";
+            string intDir = Path.Combine(testDir, "int");
+            string a = Path.Combine(testDir, "a");
+            string b = Path.Combine(testDir, "b");
+            string c = Path.Combine(testDir, "c");
+            string d = Path.Combine(testDir, "d");
+            if (!File.Exists(a)) {
+                File.WriteAllText(a, "a");
+            }
+
+            var fcB = new FileCopy(buildGraph, a, b, intDir);
+            var fcC = new FileCopy(buildGraph, b, c, intDir);
+            var fcD = new FileCopy(buildGraph, c, d, intDir);
+
+            BuildOptions buildOptions = new BuildOptions();
+            buildOptions.ContinueOnError = false;
+            buildOptions.FileDecider = new FileSizeDateDecider();
+            buildOptions.MaxConcurrency = 1;
+
+            string[] targets = { d };
+            BuildResults buildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+            Console.WriteLine("BuildResults.Success          = {0}", buildResults.Success);
+            Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
+            Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
+
+            //QRPath.Delete(a, b, c, d);
+        }
+
         static void Main(string[] args)
         {
 
@@ -174,7 +207,11 @@ ENDLOCAL
             TestMsvc9Compile();
 #endif
 
+#if false
             TestSingleNodeGraph();
+#endif
+
+            TestDependencyChain();
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();

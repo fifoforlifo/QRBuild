@@ -73,7 +73,7 @@ EXIT /B %ERRORLEVEL%
             }
         }
 
-        public override string PrimaryOutputFilePath
+        public override string BuildFileBaseName
         {
             get 
             {
@@ -94,6 +94,15 @@ EXIT /B %ERRORLEVEL%
             b.AppendFormat("ToolChain={0}\n", m_params.ToolChain);
             b.Append(m_params.ToArgumentString());
             return b.ToString();
+        }
+
+        public override bool RequiresImplicitInputs
+        {
+            get { return true; }
+        }
+        public override bool GeneratesImplicitOutputs
+        {
+            get { return false; }
         }
 
         protected override void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs)
@@ -210,31 +219,31 @@ EXIT /B %ERRORLEVEL%
 
         private string GetBatchFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.bat";
+            return BuildFileBaseName + "__qr__.bat";
         }
         private string GetResponseFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.rsp";
+            return BuildFileBaseName + "__qr__.rsp";
         }
         private string GetBuildLogFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.log";
+            return BuildFileBaseName + "__qr__.log";
         }
         private string GetPpBatchFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__._pp.bat";
+            return BuildFileBaseName + "__qr__._pp.bat";
         }
         private string GetPpResponseFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__._pp.rsp";
+            return BuildFileBaseName + "__qr__._pp.rsp";
         }
         private string GetPreProcessedFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__._pp.i";
+            return BuildFileBaseName + "__qr__._pp.i";
         }
         private string GetShowIncludesFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__._pp.d";
+            return BuildFileBaseName + "__qr__._pp.d";
         }
         private string GetVcVarsBatchFilePath()
         {

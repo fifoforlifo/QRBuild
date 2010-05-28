@@ -59,6 +59,7 @@
     <Compile Include="BuildTranslation.cs" />
     <Compile Include="DependencyCache.cs" />
     <Compile Include="IFileDecider.cs" />
+    <Compile Include="Translations\IO\FileCopy.cs" />
     <Compile Include="Translations\QRProcess.cs" />
     <Compile Include="FileSizeDateDecider.cs" />
     <Compile Include="IO\QRPath.cs" />

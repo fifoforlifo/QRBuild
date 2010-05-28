@@ -66,7 +66,7 @@ EXIT /B %ERRORLEVEL%
             }
         }
 
-        public override string PrimaryOutputFilePath
+        public override string BuildFileBaseName
         {
             get { return m_params.OutputFilePath; }
         }
@@ -74,6 +74,15 @@ EXIT /B %ERRORLEVEL%
         public override string GetCacheableTranslationParameters()
         {
             return m_params.ToArgumentString();
+        }
+
+        public override bool RequiresImplicitInputs
+        {
+            get { return false; }
+        }
+        public override bool GeneratesImplicitOutputs
+        {
+            get { return false; }
         }
 
         protected override void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs)
@@ -96,21 +105,20 @@ EXIT /B %ERRORLEVEL%
 
         protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
         {
-            //  C# does not have implicit dependencies.
             return true;
         }
 
         private string GetBatchFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.bat";
+            return BuildFileBaseName + "__qr__.bat";
         }
         private string GetResponseFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.rsp";
+            return BuildFileBaseName + "__qr__.rsp";
         }
         private string GetBuildLogFilePath()
         {
-            return PrimaryOutputFilePath + "__qr__.log";
+            return BuildFileBaseName + "__qr__.log";
         }
         private string GetCscPath()
         {

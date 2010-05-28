@@ -25,7 +25,7 @@ namespace QRBuild
             {
                 if (m_depsCachePath == null) 
                 {
-                    m_depsCachePath = PrimaryOutputFilePath + ".deps";
+                    m_depsCachePath = BuildFileBaseName + ".deps";
                 }
                 return m_depsCachePath;
             }
@@ -88,10 +88,10 @@ namespace QRBuild
 
         //  TODO: add events for Executing and Executed
 
-        /// Returns the name of the primary output of this translation.
-        /// This file name is used as a base for generating other build-related
+        /// Returns a base file name suitable for generating other build-related
         /// files, such as the DepsCache and any process launching scripts.
-        public abstract string PrimaryOutputFilePath { get; }
+        /// Typical Translations should name this after 
+        public abstract string BuildFileBaseName { get; }
 
         /// Get a string that contains all configuration parameters that
         /// control the translation.  These are stored in DepsCache files,
@@ -99,6 +99,14 @@ namespace QRBuild
         /// The current and previous values are compared when computing
         /// dirty status during a BuildProcess execution.
         public abstract string GetCacheableTranslationParameters();
+
+        /// Translation returns true if it's possible to have implicit inputs.
+        public abstract bool RequiresImplicitInputs { get; }
+        
+        /// Translation returns true if it's possible to generate implicit outputs.
+        /// Implicit outputs are expensive to process, so avoiding this feature
+        /// can result in faster builds.
+        public abstract bool GeneratesImplicitOutputs { get; }
 
 
         //-- Internal interface

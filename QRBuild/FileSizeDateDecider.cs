@@ -14,11 +14,10 @@ namespace QRBuild
                 return NonExistent;
             }
 
-            long lastWriteTimeUtc = fileInfo.LastWriteTimeUtc.ToFileTimeUtc();
             string stamp = string.Format(
                 "{{size={0}, date={1}}}",
                 fileInfo.Length,
-                lastWriteTimeUtc);
+                fileInfo.LastWriteTimeUtc.Ticks);
             return stamp;
         }
     }

@@ -70,5 +70,12 @@ namespace QRBuild.IO
                 dest.Add(path);
             }
         }
+
+        public static void Delete(params string[] paths)
+        {
+            foreach (string path in paths) {
+                File.Delete(path);
+            }
+        }
     }
 }
