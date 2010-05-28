@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using QRBuild.IO;
 
-namespace QRBuild.Translations.Cpp.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc9
 {
     public static class Msvc9CompileExtensions
     {

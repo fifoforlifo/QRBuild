@@ -7,7 +7,7 @@ using QRBuild.IO;
 using QRBuild.Linq;
 using QRBuild.Translations;
 
-namespace QRBuild.Translations.CSharp.MsCsc
+namespace QRBuild.Translations.ToolChain.MsCsc
 {
     public sealed class CSharpCompile : BuildTranslation
     {

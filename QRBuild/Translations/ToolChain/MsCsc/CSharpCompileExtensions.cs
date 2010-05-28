@@ -6,7 +6,7 @@ using System.Text;
 using QRBuild.IO;
 using QRBuild.Linq;
 
-namespace QRBuild.Translations.CSharp.MsCsc
+namespace QRBuild.Translations.ToolChain.MsCsc
 {
     public static class CSharpCompileExtensions
     {

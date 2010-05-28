@@ -45,9 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Translations\Cpp\Msvc9\Msvc9Compile.cs" />
-    <Compile Include="Translations\Cpp\Msvc9\Msvc9CompileExtensions.cs" />
-    <Compile Include="Translations\Cpp\Msvc9\Msvc9CompileParams.cs" />
+    <Compile Include="Translations\ToolChain\Msvc9\Msvc9Compile.cs" />
+    <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileExtensions.cs" />
+    <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileParams.cs" />
     <Compile Include="BuildAction.cs" />
     <Compile Include="BuildGraph.cs" />
     <Compile Include="BuildNode.cs" />
@@ -65,9 +65,9 @@
     <Compile Include="IO\QRPath.cs" />
     <Compile Include="IO\QRFileStream.cs" />
     <Compile Include="Linq\CollectionsExtensions.cs" />
-    <Compile Include="Translations\CSharp\MsCsc\CSharpCompile.cs" />
-    <Compile Include="Translations\CSharp\MsCsc\CSharpCompileParams.cs" />
-    <Compile Include="Translations\CSharp\MsCsc\CSharpCompileExtensions.cs" />
+    <Compile Include="Translations\ToolChain\MsCsc\CSharpCompile.cs" />
+    <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileParams.cs" />
+    <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

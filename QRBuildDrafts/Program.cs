@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-using QRBuild.Translations.Cpp.Msvc9;
-using QRBuild.Translations.CSharp.MsCsc;
+using QRBuild.Translations.ToolChain.Msvc9;
+using QRBuild.Translations.ToolChain.MsCsc;
 using QRBuild.Translations.IO;
 using QRBuild.IO;
 using QRBuild.Translations;

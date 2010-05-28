@@ -8,7 +8,7 @@ using QRBuild.IO;
 using QRBuild.Linq;
 using QRBuild.Translations;
 
-namespace QRBuild.Translations.Cpp.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc9
 {
     public sealed class Msvc9Compile : BuildTranslation
     {
