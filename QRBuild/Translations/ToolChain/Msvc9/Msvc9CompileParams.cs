@@ -115,7 +115,9 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         }
 
         //-- Meta
-        /// Typically this will be 
+        public string CompileDir;
+        public string BuildFileDir;
+        /// VcBinDir typically will be 
         /// 32-bit OS : %ProgramFiles%\Microsoft Visual Studio 9.0\VC\bin
         /// 64-bit OS : %ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin
         public string VcBinDir;
@@ -123,7 +125,6 @@ namespace QRBuild.Translations.ToolChain.Msvc9
 
         //-- Input and Output Options
         public string SourceFile;
-        public string CompileDir;
         public bool Compile;
         public string ObjectPath;
         public string PdbPath;
@@ -154,19 +155,19 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         public bool HotPatchable;
 
         //-- PreProcessor
-        public List<string> Defines = new List<string>();
-        public List<string> Undefines = new List<string>();
+        public readonly List<string> Defines = new List<string>();
+        public readonly List<string> Undefines = new List<string>();
         public bool UndefineAllPredefinedMacros;
-        public List<string> IncludeDirs = new List<string>();
-        public List<string> AssemblySearchDirs = new List<string>();
+        public readonly List<string> IncludeDirs = new List<string>();
+        public readonly List<string> AssemblySearchDirs = new List<string>();
         /// Also known as "prefix files", these files are implicitly
         /// included at the top of each translation unit.
         /// It's equivalent to having
         ///     #define "PrefixFile.h" 
         /// at the top of each source file.
-        public List<string> ForcedIncludes = new List<string>();
+        public readonly List<string> ForcedIncludes = new List<string>();
         /// Forced #using assemblies.
-        public List<string> ForcedUsings = new List<string>();
+        public readonly List<string> ForcedUsings = new List<string>();
         /// Ignore PATH and INCLUDE environment variables.
         public bool IgnoreStandardPaths;
 

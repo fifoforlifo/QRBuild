@@ -12,7 +12,7 @@ namespace QRBuild.Translations.IO
             BuildGraph buildGraph, 
             string source, 
             string destination,
-            string intermediateDir)
+            string buildFileDir)
             : base(buildGraph)
         {
             if (String.IsNullOrEmpty(source)) {
@@ -27,7 +27,7 @@ namespace QRBuild.Translations.IO
 
             m_source = QRPath.GetCanonical(source);
             m_destination = QRPath.GetCanonical(destination); ;
-            m_intermediateDir = QRPath.GetCanonical(intermediateDir);
+            m_buildFileDir = QRPath.GetCanonical(buildFileDir);
         }
 
         public override bool Execute()
@@ -47,7 +47,7 @@ namespace QRBuild.Translations.IO
             get 
             {
                 string destFileName = Path.GetFileName(m_destination);
-                string result = Path.Combine(m_intermediateDir, destFileName);
+                string result = Path.Combine(m_buildFileDir, destFileName);
                 return result; 
             }
         }
@@ -83,6 +83,6 @@ namespace QRBuild.Translations.IO
 
         private readonly string m_source;
         private readonly string m_destination;
-        private readonly string m_intermediateDir;
+        private readonly string m_buildFileDir;
     }
 }

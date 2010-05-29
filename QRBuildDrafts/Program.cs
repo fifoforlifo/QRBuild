@@ -194,6 +194,63 @@ ENDLOCAL
             //QRPath.Delete(a, b, c, d);
         }
 
+        class CompileLink1
+        {
+            static string vcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
+            static Msvc9ToolChain toolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            static string compileDir = @"K:\work\code\C#\QRBuild\Tests\B";
+            static string buildFileDir = @"K:\work\code\C#\QRBuild\Tests\B\built";
+
+            static Msvc9Compile CompileOne(BuildGraph buildGraph, string sourceFile)
+            {
+                string sourceFileName = Path.GetFileName(sourceFile);
+                string objName = Path.Combine(buildFileDir, QRPath.ChangeExtension(sourceFileName, ".obj"));
+
+                var ccp = new Msvc9CompileParams();
+                ccp.VcBinDir = vcBinDir;
+                ccp.ToolChain = toolChain;
+                ccp.CompileDir = compileDir;
+                ccp.BuildFileDir = buildFileDir;
+                ccp.SourceFile = sourceFile;
+                ccp.ObjectPath = objName;
+                ccp.Compile = true;
+                ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+                var cc = new Msvc9Compile(buildGraph, ccp);
+                return cc;
+            }
+
+            public static void TestCppCompileLink()
+            {
+                var buildGraph = new BuildGraph();
+
+                Directory.CreateDirectory(buildFileDir);
+
+                var cc_test02 = CompileOne(buildGraph, "test02.cpp");
+                var cc_foo = CompileOne(buildGraph, "foo.cpp");
+
+                var linkerParams = new Msvc9LinkerParams();
+                linkerParams.VcBinDir = vcBinDir;
+                linkerParams.ToolChain = toolChain;
+                linkerParams.CompileDir = compileDir;
+                linkerParams.BuildFileDir = buildFileDir;
+                linkerParams.Inputs.Add(cc_test02.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_foo.Params.ObjectPath);
+                linkerParams.OutputFilePath = "result.exe";
+                var link = new Msvc9Link(buildGraph, linkerParams);
+
+                BuildOptions buildOptions = new BuildOptions();
+                buildOptions.ContinueOnError = false;
+                buildOptions.FileDecider = new FileSizeDateDecider();
+                buildOptions.MaxConcurrency = 1;
+
+                string[] targets = { link.Params.OutputFilePath };
+                BuildResults buildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+                Console.WriteLine("BuildResults.Success          = {0}", buildResults.Success);
+                Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
+                Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
+            }
+        }
+
         static void Main(string[] args)
         {
 
@@ -211,7 +268,11 @@ ENDLOCAL
             TestSingleNodeGraph();
 #endif
 
+#if false
             TestDependencyChain();
+#endif
+
+            CompileLink1.TestCppCompileLink();
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();

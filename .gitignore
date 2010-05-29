@@ -3,4 +3,5 @@
 **/bin/**/*
 **/obj/**/*
 **/*.user
-Tests/**/*
+Tests/A/*
+Tests/A/**/*

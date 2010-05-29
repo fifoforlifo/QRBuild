@@ -18,6 +18,11 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             m_params = p.Canonicalize();
         }
 
+        public Msvc9CompileParams Params
+        {
+            get { return m_params; }
+        }
+
         public override bool Execute()
         {
             string responseFile = m_params.ToArgumentString();
@@ -26,7 +31,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
 
             string logFilePath = GetBuildLogFilePath();
 
-            string vcvarsBatchFilePath = GetVcVarsBatchFilePath();
+            string vcvarsBatchFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             if (!File.Exists(vcvarsBatchFilePath)) {
                 throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
             }
@@ -77,13 +82,20 @@ EXIT /B %ERRORLEVEL%
         {
             get 
             {
-                if (m_params.Compile) {
-                    return m_params.ObjectPath; 
+                if (String.IsNullOrEmpty(m_buildFileBaseName)) {
+                    if (m_params.Compile) {
+                        string fileName = Path.GetFileName(m_params.ObjectPath);
+                        m_buildFileBaseName = Path.Combine(m_params.BuildFileDir, fileName);
+                    }
+                    else if (m_params.CreatePch) {
+                        string fileName = Path.GetFileName(m_params.CreatePchFilePath);
+                        m_buildFileBaseName = Path.Combine(m_params.BuildFileDir, fileName);
+                    }
+                    else {
+                        throw new InvalidOperationException("No valid output file specified for this Translation");
+                    }
                 }
-                else if (m_params.CreatePch) {
-                    return m_params.CreatePchFilePath;
-                }
-                throw new InvalidOperationException("No valid output file specified for this Translation");
+                return m_buildFileBaseName;
             }
         }
 
@@ -109,7 +121,7 @@ EXIT /B %ERRORLEVEL%
         {
             inputs.Add(m_params.SourceFile);
             // Add known toolchain binaries to the inputs.
-            string vcvarsFilePath = GetVcVarsBatchFilePath();
+            string vcvarsFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             inputs.Add(vcvarsFilePath);
             if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetX86) {
                 string clPath = QRPath.GetCanonical(Path.Combine(m_params.VcBinDir, "cl.exe"));
@@ -126,6 +138,7 @@ EXIT /B %ERRORLEVEL%
                 inputs.Add(clPath);
             }
 
+            // Outputs
             string objFilePath = QRPath.ComputeDefaultFilePath(m_params.ObjectPath, m_params.SourceFile, ".obj", m_params.CompileDir);
             outputs.Add(objFilePath);
             if (m_params.DebugInfoFormat != Msvc9DebugInfoFormat.None) {
@@ -150,7 +163,7 @@ EXIT /B %ERRORLEVEL%
 
             string showIncludesFilePath = GetShowIncludesFilePath();
 
-            string vcvarsBatchFilePath = GetVcVarsBatchFilePath();
+            string vcvarsBatchFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             if (!File.Exists(vcvarsBatchFilePath)) {
                 throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
             }
@@ -245,25 +258,8 @@ EXIT /B %ERRORLEVEL%
         {
             return BuildFileBaseName + "__qr__._pp.d";
         }
-        private string GetVcVarsBatchFilePath()
-        {
-            if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetX86) {
-                string batchFilePath = Path.Combine(m_params.VcBinDir, "vcvars32.bat");
-                return batchFilePath;
-            }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetAmd64) {
-                string toolsDir = Path.Combine(m_params.VcBinDir, "x86_amd64");
-                string batchFilePath = Path.Combine(toolsDir, "vcvarsx86_amd64.bat");
-                return batchFilePath;
-            }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsAmd64TargetAmd64) {
-                string toolsDir = Path.Combine(m_params.VcBinDir, "amd64");
-                string batchFilePath = Path.Combine(toolsDir, "vcvarsamd64.bat");
-                return batchFilePath;
-            }
-            return null;
-        }
 
         private readonly Msvc9CompileParams m_params;
+        private string m_buildFileBaseName;
     }
 }

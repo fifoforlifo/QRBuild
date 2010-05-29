@@ -18,6 +18,9 @@ namespace QRBuild.Translations.ToolChain.MsCsc
                 throw new InvalidOperationException("C# CompileDir not specified");
             }
             o.CompileDir = p.CompileDir;
+            o.BuildFileDir = String.IsNullOrEmpty(p.BuildFileDir)
+                ? p.CompileDir
+                : QRPath.GetCanonical(p.BuildFileDir);
             if (String.IsNullOrEmpty(p.FrameworkVersion)) {
                 throw new InvalidOperationException("C# FrameworkVersion not specified");
             }

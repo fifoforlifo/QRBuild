@@ -35,6 +35,7 @@ namespace QRBuild.Translations.ToolChain.MsCsc
 
         //-- Meta Options
         public string CompileDir;
+        public string BuildFileDir;
         public string FrameworkVersion;
         public string ExtraArgs;
         

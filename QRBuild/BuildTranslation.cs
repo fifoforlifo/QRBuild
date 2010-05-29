@@ -25,7 +25,7 @@ namespace QRBuild
             {
                 if (m_depsCachePath == null) 
                 {
-                    m_depsCachePath = BuildFileBaseName + ".deps";
+                    m_depsCachePath = BuildFileBaseName + "__qr__.deps";
                 }
                 return m_depsCachePath;
             }

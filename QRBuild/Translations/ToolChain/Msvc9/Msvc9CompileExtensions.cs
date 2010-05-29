@@ -17,23 +17,29 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             if (String.IsNullOrEmpty(p.VcBinDir)) {
                 throw new InvalidOperationException("VcBinDir not specified");
             }
-            o.VcBinDir = QRPath.GetAbsolutePath(p.VcBinDir, p.CompileDir);
+            if (String.IsNullOrEmpty(p.CompileDir)) {
+                throw new InvalidOperationException("CompileDir not specified");
+            }
+            o.CompileDir = QRPath.GetCanonical(p.CompileDir);
+            o.BuildFileDir = String.IsNullOrEmpty(p.BuildFileDir)
+                ? p.CompileDir
+                : QRPath.GetCanonical(p.BuildFileDir);
+            o.VcBinDir = QRPath.GetAbsolutePath(p.VcBinDir, o.CompileDir);
             o.ToolChain = p.ToolChain;
 
             //-- Input and Output Options
             if (String.IsNullOrEmpty(p.SourceFile)) {
                 throw new InvalidOperationException("C/C++ SourceFile not specified");
             }
-            o.SourceFile = QRPath.GetAbsolutePath(p.SourceFile, p.CompileDir);
-            o.CompileDir = p.CompileDir;
+            o.SourceFile = QRPath.GetAbsolutePath(p.SourceFile, o.CompileDir);
             o.Compile = p.Compile;
             if (p.Compile) {
-                o.ObjectPath = QRPath.ComputeDefaultFilePath(p.ObjectPath, p.SourceFile, ".obj", p.CompileDir);
-                o.PdbPath = QRPath.ComputeDefaultFilePath(p.PdbPath, p.SourceFile, ".pdb", p.CompileDir);
+                o.ObjectPath = QRPath.ComputeDefaultFilePath(p.ObjectPath, p.SourceFile, ".obj", o.CompileDir);
+                o.PdbPath = QRPath.ComputeDefaultFilePath(p.PdbPath, o.ObjectPath, ".pdb", o.CompileDir);
             }
             o.AsmOutputFormat = p.AsmOutputFormat;
             if (p.AsmOutputFormat != Msvc9AsmOutputFormat.None) {
-                o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm", p.CompileDir);
+                o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm", o.CompileDir);
             }
             o.ClrSupport = p.ClrSupport;
             o.ExtraArgs = p.ExtraArgs;
@@ -63,10 +69,10 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             o.Defines.AddRange(p.Defines);
             o.Undefines.AddRange(p.Undefines);
             o.UndefineAllPredefinedMacros = p.UndefineAllPredefinedMacros;
-            o.IncludeDirs.AddRangeAsAbsolutePaths(p.IncludeDirs, p.CompileDir);
-            o.AssemblySearchDirs.AddRangeAsAbsolutePaths(p.AssemblySearchDirs, p.CompileDir);
-            o.ForcedIncludes.AddRangeAsAbsolutePaths(p.ForcedIncludes, p.CompileDir);
-            o.ForcedUsings.AddRangeAsAbsolutePaths(p.ForcedUsings, p.CompileDir);
+            o.IncludeDirs.AddRangeAsAbsolutePaths(p.IncludeDirs, o.CompileDir);
+            o.AssemblySearchDirs.AddRangeAsAbsolutePaths(p.AssemblySearchDirs, o.CompileDir);
+            o.ForcedIncludes.AddRangeAsAbsolutePaths(p.ForcedIncludes, o.CompileDir);
+            o.ForcedUsings.AddRangeAsAbsolutePaths(p.ForcedUsings, o.CompileDir);
             o.IgnoreStandardPaths = p.IgnoreStandardPaths;
 
             //-- Language
@@ -87,10 +93,10 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             o.TreatWarningsAsErrors = p.TreatWarningsAsErrors;
             
             if (p.CreatePch) {
-                o.CreatePchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch", p.CompileDir);
+                o.CreatePchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch", o.CompileDir);
             }
             if (!String.IsNullOrEmpty(p.UsePchFilePath)) {
-                o.UsePchFilePath = QRPath.GetAbsolutePath(p.UsePchFilePath, p.CompileDir);
+                o.UsePchFilePath = QRPath.GetAbsolutePath(p.UsePchFilePath, o.CompileDir);
             }
 
             return o;
