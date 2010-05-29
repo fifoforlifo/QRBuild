@@ -66,6 +66,15 @@ EXIT /B %ERRORLEVEL%
             }
         }
 
+        public override HashSet<string> GetIntermediateBuildFiles()
+        {
+            HashSet<string> result = new HashSet<string>();
+            result.Add(GetBatchFilePath());
+            result.Add(GetResponseFilePath());
+            result.Add(GetBuildLogFilePath());
+            return result;
+        }
+
         public override string BuildFileBaseName
         {
             get

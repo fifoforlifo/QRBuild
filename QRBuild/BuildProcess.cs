@@ -244,6 +244,10 @@ namespace QRBuild
                 foreach (var output in buildNode.Translation.ImplicitOutputs) {
                     File.Delete(output);
                 }
+                HashSet<string> intermediateBuildFiles = buildNode.Translation.GetIntermediateBuildFiles();
+                foreach (var output in intermediateBuildFiles) {
+                    File.Delete(output);
+                }
                 File.Delete(buildNode.Translation.DepsCacheFilePath);
                 buildNode.Status = BuildStatus.ExecuteSucceeded;
             }

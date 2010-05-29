@@ -248,6 +248,8 @@ ENDLOCAL
                 Console.WriteLine("BuildResults.Success          = {0}", buildResults.Success);
                 Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
                 Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
+
+                BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
             }
         }
 

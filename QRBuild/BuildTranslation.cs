@@ -88,6 +88,9 @@ namespace QRBuild
 
         //  TODO: add events for Executing and Executed
 
+        /// Returns a set of build files.  Primarily used for Clean.
+        public abstract HashSet<string> GetIntermediateBuildFiles();
+
         /// Returns a base file name suitable for generating other build-related
         /// files, such as the DepsCache and any process launching scripts.
         /// Typical Translations should name this after 

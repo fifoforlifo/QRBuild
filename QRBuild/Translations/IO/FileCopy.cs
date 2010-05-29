@@ -42,6 +42,12 @@ namespace QRBuild.Translations.IO
             return true;
         }
 
+        public override HashSet<string> GetIntermediateBuildFiles()
+        {
+            HashSet<string> result = new HashSet<string>();
+            return result;
+        }
+
         public override string BuildFileBaseName
         {
             get 
