@@ -17,6 +17,9 @@ namespace QRBuild
         /// all inputs and outputs were up-to-date.
         public int UpToDateCount { get; internal set; }
 
+        /// Number of times a Translation's implicit IOs were updated.
+        public int UpdateImplicitIOCount { get; internal set; }
+
         /// BuildGraph.Execute() wallclock times.
         public DateTime ExecuteStartTime { get; internal set; }
         public DateTime ExecuteEndTime { get; internal set; }

@@ -165,7 +165,7 @@ namespace QRBuild
                     Monitor.Wait(m_executedListMutex);
                 }
 
-                //  Quickly drain the completedList.
+                //  Quickly drain the executedList.
                 //  All completed BuildNodes will be processed through here.
                 while (m_executedList.Count > 0) {
                     BuildNode completedNode = m_executedList.Dequeue();
@@ -179,6 +179,9 @@ namespace QRBuild
                     }
                     else if (completedNode.Status == BuildStatus.TranslationUpToDate) {
                         m_buildResults.UpToDateCount += 1;
+                    }
+                    else if (completedNode.Status == BuildStatus.ImplicitIONotReady) {
+                        m_buildResults.UpdateImplicitIOCount += 1;
                     }
 
                     if (completedNode.Status.Succeeded()) {
@@ -212,13 +215,16 @@ namespace QRBuild
         {
             lock (m_buildNodesMutex)
             {
-                foreach (var consumer in buildNode.Consumers) {
-                    bool consumerReady = AllDependenciesExecuted(consumer);
-                    if (consumerReady) {
-                        lock (m_runListMutex) {
-                            m_runSet.Add(consumer);
-                            m_runList.Enqueue(consumer);
-                            Monitor.Pulse(m_runListMutex);
+                if (buildNode.Status.Executed())
+                {
+                    foreach (var consumer in buildNode.Consumers) {
+                        bool consumerReady = AllDependenciesExecuted(consumer);
+                        if (consumerReady) {
+                            lock (m_runListMutex) {
+                                m_runSet.Add(consumer);
+                                m_runList.Enqueue(consumer);
+                                Monitor.Pulse(m_runListMutex);
+                            }
                         }
                     }
                 }
@@ -295,7 +301,11 @@ namespace QRBuild
                 //  Since all explicit inputs exist, we can update the implicit IOs.
                 buildNode.Translation.UpdateImplicitIO();
                 bool implicitDependenciesReady = PropagateDependenciesFromImplicitIO(buildNode);
-
+                if (!implicitDependenciesReady) {
+                    //  Clear the deps cache, so this node must re-execute when inputs are ready.
+                    depsCacheFileStream.SetLength(0);
+                    return BuildStatus.ImplicitIONotReady;
+                }
 
                 bool executeSucceeded = false;
                 try
@@ -307,7 +317,8 @@ namespace QRBuild
                 	//  TODO: log the error
                 }
                 if (!executeSucceeded) {
-                    WriteDepsCacheFile(depsCacheFileStream, buildNode);
+                    //  Clear the deps cache, so this failed node must execute on the next build.
+                    depsCacheFileStream.SetLength(0);
                     return BuildStatus.ExecuteFailed;
                 }
 

@@ -39,10 +39,10 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             string batchFilePath = GetBatchFilePath();
             string batchFile = String.Format(@"
 @echo off
-REM If run with an argument, the batch file calls itself and redirects stdout,stderr to log file.
-IF _%1 == _stdouterr (
-    cmd /C  {0} > ""{1}""  2>&1
-    EXIT /B %ERRORLEVEL%
+REM If run without an argument, the batch file calls itself and redirects stdout,stderr to log file.
+IF _%1 == _ (
+    cmd /C  {0} doit > ""{1}""  2>&1
+    GOTO :END
 )
 
 @echo {2}
@@ -54,7 +54,8 @@ cd ""{5}""
 
 cl @""{6}""
 
-EXIT /B %ERRORLEVEL%
+:END
+EXIT %ERRORLEVEL%
 ",
                 batchFilePath,
                 logFilePath,
@@ -66,7 +67,7 @@ EXIT /B %ERRORLEVEL%
 
             File.WriteAllText(batchFilePath, batchFile);
 
-            using (QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir, false, "stdouterr"))
+            using (QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir, false, ""))
             {
                 process.WaitHandle.WaitOne();
 

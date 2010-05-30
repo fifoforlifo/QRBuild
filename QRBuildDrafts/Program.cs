@@ -215,8 +215,18 @@ ENDLOCAL
                 ccp.ObjectPath = objName;
                 ccp.Compile = true;
                 ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+                ccp.IncludeDirs.Add(@"K:\work\code\lib\boost_1_43_0");
+                ccp.CppExceptions = Msvc9CppExceptions.Enabled;
                 var cc = new Msvc9Compile(buildGraph, ccp);
                 return cc;
+            }
+
+            static void PrintBuildResults(BuildResults buildResults)
+            {
+                Console.WriteLine("BuildResults.Success               = {0}", buildResults.Success);
+                Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
+                Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
+                Console.WriteLine("BuildResults.UpdateImplicitIOCount = {0}", buildResults.UpdateImplicitIOCount);
             }
 
             public static void TestCppCompileLink()
@@ -227,6 +237,9 @@ ENDLOCAL
 
                 var cc_test02 = CompileOne(buildGraph, "test02.cpp");
                 var cc_foo = CompileOne(buildGraph, "foo.cpp");
+                var cc_groo = CompileOne(buildGraph, "groo.cpp");
+                var cc_qoo = CompileOne(buildGraph, "qoo.cpp");
+                var cc_yoo = CompileOne(buildGraph, "yoo.cpp");
 
                 var linkerParams = new Msvc9LinkerParams();
                 linkerParams.VcBinDir = vcBinDir;
@@ -235,21 +248,26 @@ ENDLOCAL
                 linkerParams.BuildFileDir = buildFileDir;
                 linkerParams.Inputs.Add(cc_test02.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_foo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_groo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_qoo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_yoo.Params.ObjectPath);
                 linkerParams.OutputFilePath = "result.exe";
                 var link = new Msvc9Link(buildGraph, linkerParams);
 
                 BuildOptions buildOptions = new BuildOptions();
                 buildOptions.ContinueOnError = false;
                 buildOptions.FileDecider = new FileSizeDateDecider();
-                buildOptions.MaxConcurrency = 1;
+                buildOptions.MaxConcurrency = 9;
 
                 string[] targets = { link.Params.OutputFilePath };
-                BuildResults buildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-                Console.WriteLine("BuildResults.Success          = {0}", buildResults.Success);
-                Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
-                Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
+
+                BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+                PrintBuildResults(cleanBuildResults);
+                BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+                PrintBuildResults(incrementalBuildResults);
 
                 BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
+                PrintBuildResults(cleanResults);
             }
         }
 
