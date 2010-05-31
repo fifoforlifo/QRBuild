@@ -5,3 +5,4 @@
 **/*.user
 Tests/A/*
 Tests/A/**/*
+Tests/B/**/*

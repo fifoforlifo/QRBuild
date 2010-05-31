@@ -25,6 +25,7 @@ namespace QRBuild
             // TODO: trace targets
 
             BuildResults buildResults = new BuildResults();
+            buildResults.Action = action;
             buildResults.ExecuteStartTime = DateTime.Now;
 
             buildResults.Success = UntimedExecute(

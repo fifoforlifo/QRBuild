@@ -4,6 +4,8 @@ namespace QRBuild
 {
     public sealed class BuildResults
     {
+        public BuildAction Action { get; internal set; }
+        
         public bool Success { get; internal set; }
 
         /// Total number of translations involved in a Build execution.

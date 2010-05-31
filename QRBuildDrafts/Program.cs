@@ -223,6 +223,8 @@ ENDLOCAL
 
             static void PrintBuildResults(BuildResults buildResults)
             {
+                Console.WriteLine("===================================================");
+                Console.WriteLine("BuildResults.Action                = {0}", buildResults.Action);
                 Console.WriteLine("BuildResults.Success               = {0}", buildResults.Success);
                 Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
                 Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
@@ -240,6 +242,10 @@ ENDLOCAL
                 var cc_groo = CompileOne(buildGraph, "groo.cpp");
                 var cc_qoo = CompileOne(buildGraph, "qoo.cpp");
                 var cc_yoo = CompileOne(buildGraph, "yoo.cpp");
+                var cc_aoo = CompileOne(buildGraph, "aoo.cpp");
+                var cc_boo = CompileOne(buildGraph, "boo.cpp");
+                var cc_coo = CompileOne(buildGraph, "coo.cpp");
+                var cc_doo = CompileOne(buildGraph, "doo.cpp");
 
                 var linkerParams = new Msvc9LinkerParams();
                 linkerParams.VcBinDir = vcBinDir;
@@ -251,13 +257,17 @@ ENDLOCAL
                 linkerParams.Inputs.Add(cc_groo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_qoo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_yoo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_aoo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_boo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_coo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_doo.Params.ObjectPath);
                 linkerParams.OutputFilePath = "result.exe";
                 var link = new Msvc9Link(buildGraph, linkerParams);
 
                 BuildOptions buildOptions = new BuildOptions();
                 buildOptions.ContinueOnError = false;
                 buildOptions.FileDecider = new FileSizeDateDecider();
-                buildOptions.MaxConcurrency = 9;
+                buildOptions.MaxConcurrency = 6;
 
                 string[] targets = { link.Params.OutputFilePath };
 
@@ -266,8 +276,11 @@ ENDLOCAL
                 BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
                 PrintBuildResults(incrementalBuildResults);
 
-                BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
-                PrintBuildResults(cleanResults);
+                bool doClean = true;
+                if (doClean) {
+                    BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
+                    PrintBuildResults(cleanResults);
+                }
             }
         }
 
@@ -292,7 +305,9 @@ ENDLOCAL
             TestDependencyChain();
 #endif
 
-            CompileLink1.TestCppCompileLink();
+            for (int i = 0; i < 100; i++) {
+                CompileLink1.TestCppCompileLink();
+            }
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
