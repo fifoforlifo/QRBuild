@@ -228,7 +228,7 @@ ENDLOCAL
                 Console.WriteLine("BuildResults.Success               = {0}", buildResults.Success);
                 Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
                 Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
-                Console.WriteLine("BuildResults.UpdateImplicitIOCount = {0}", buildResults.UpdateImplicitIOCount);
+                Console.WriteLine("BuildResults.UpdateImplicitInputsCount = {0}", buildResults.UpdateImplicitInputsCount);
             }
 
             public static void TestCppCompileLink()
@@ -252,15 +252,15 @@ ENDLOCAL
                 linkerParams.ToolChain = toolChain;
                 linkerParams.CompileDir = compileDir;
                 linkerParams.BuildFileDir = buildFileDir;
-                linkerParams.Inputs.Add(cc_test02.Params.ObjectPath);
-                linkerParams.Inputs.Add(cc_foo.Params.ObjectPath);
-                linkerParams.Inputs.Add(cc_groo.Params.ObjectPath);
-                linkerParams.Inputs.Add(cc_qoo.Params.ObjectPath);
-                linkerParams.Inputs.Add(cc_yoo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_aoo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_boo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_coo.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_doo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_foo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_groo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_qoo.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_test02.Params.ObjectPath);
+                linkerParams.Inputs.Add(cc_yoo.Params.ObjectPath);
                 linkerParams.OutputFilePath = "result.exe";
                 var link = new Msvc9Link(buildGraph, linkerParams);
 

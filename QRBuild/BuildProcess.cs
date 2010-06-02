@@ -9,26 +9,37 @@ using QRBuild.Linq;
 
 namespace QRBuild
 {
+    internal class BuildWorkItem
+    {
+        public BuildWorkItem(BuildNode buildNode)
+        {
+            BuildNode = buildNode;
+        }
+        public readonly BuildNode BuildNode;        
+        public BuildStatus ReturnedStatus;
+    }
+    
     internal class BuildProcess
     {
         ///-----------------------------------------------------------------
         /// Public interface
 
-        public BuildProcess(BuildGraph buildGraph, BuildOptions buildOptions, BuildResults buildResults)
+        public BuildProcess(BuildGraph buildGraph, BuildAction buildAction, BuildOptions buildOptions, BuildResults buildResults)
         {
             m_buildGraph = buildGraph;
+            m_buildAction = buildAction;
             m_buildOptions = buildOptions;
             m_buildResults = buildResults;
         }
 
-        public bool Run(BuildAction action, HashSet<BuildNode> buildNodes, bool processDependencies)
+        public bool Run(HashSet<BuildNode> buildNodes, bool processDependencies)
         {
             bool initialized = InitializeBuildProcess(buildNodes, processDependencies);
             if (!initialized) {
                 return false;
             }
 
-            bool result = Run(action);
+            bool result = Run();
             m_buildResults.TranslationCount = m_requiredNodes.Count;
             return result;
         }
@@ -37,9 +48,9 @@ namespace QRBuild
         ///-----------------------------------------------------------------
         /// Helpers
 
-        /// Determines the initial runList.
-        /// Also establishes consumer relationships for the specific nodes
-        /// that are required for this build.
+        /// Determines the initial requiredNodes and runList.
+        /// This is done by recursing through all dependencies of the input buildNodes to
+        /// ensure that all required files are up to date.
         private bool InitializeBuildProcess(IEnumerable<BuildNode> buildNodes, bool processDependencies)
         {
             m_requiredNodes.Clear();
@@ -53,6 +64,7 @@ namespace QRBuild
             if (!processDependencies) {
                 m_requiredNodes.AddRange(buildNodes);
                 m_runList.AddRange(buildNodes);
+                m_runSet.AddRange(buildNodes);
                 return true;
             }
 
@@ -65,11 +77,11 @@ namespace QRBuild
                 BuildNode currentNode = stack.Pop();
                 requiredNodes.Add(currentNode);
 
-                if (AllDependenciesExecuted(currentNode)) {
+                if (currentNode.Dependencies.Count == 0) {
                     m_runSet.Add(currentNode);
                 }
 
-                //  Recurse through all dependent nodes.
+                //  Recurse through all dependencies of currentNode.
                 foreach (BuildNode dependency in currentNode.Dependencies) {
                     if (!requiredNodes.Contains(dependency)) {
                         stack.Push(dependency);
@@ -79,7 +91,7 @@ namespace QRBuild
 
             //  Copy requiredNodes into m_requiredNodes.
             m_requiredNodes.AddRange(requiredNodes);
-            //  Copy runSet into m_runList.
+            //  Copy m_runSet into m_runList.
             foreach (var buildNode in m_runSet) {
                 m_runList.Enqueue(buildNode);
             }
@@ -102,110 +114,118 @@ namespace QRBuild
             }
         }
 
-        private bool Run(BuildAction action)
+        private bool Run()
         {
-            Queue<BuildNode> localRunList = new Queue<BuildNode>();
-
-            m_issuedNodeCount = 0;
-            m_requiredNodeCount = m_requiredNodes.Count;
             m_completedNodeCount = 0;
             m_pendingNodeCount = 0;
 
-            while (m_issuedNodeCount < m_requiredNodeCount) {
-                //  if things in runList, copy them to localRunList
-                lock (m_runListMutex)
-                {
-                    //  If it's impossible to make progress, wait for more runList entries.
-                    if (m_runList.Count == 0 && localRunList.Count == 0) {
-                        Monitor.Wait(m_runListMutex);
-                    }
+            bool completionSuccess = true;
+            if (m_runList.Count == 0) {
+                throw new InvalidOperationException("Nothing to build.");
+            }
 
-                    //  Greedily transfer all elements to localRunList.
-                    while (m_runList.Count > 0) {
-                        BuildNode buildNode = m_runList.Dequeue();
-                        m_runSet.Remove(buildNode);
-                        localRunList.Enqueue(buildNode);
-                    }
+            while (m_completedNodeCount < m_requiredNodes.Count) {
+                //  while (thingsToIssue  AND  allowedToLaunch)
+                while ((m_runList.Count > 0) && (m_pendingNodeCount < m_buildOptions.MaxConcurrency)) {
+                    //  launch one thing
+                    BuildNode buildNode = m_runList.Dequeue();
+                    m_runSet.Remove(buildNode);
+
+                    BuildWorkItem workItem = new BuildWorkItem(buildNode);
+                    ThreadPool.QueueUserWorkItem(unused => DoAction(workItem));
+                    m_pendingNodeCount += 1;
                 }
 
-                lock (m_executedListMutex) {
-                    //  while (thingsToIssue  AND  allowedToLaunch)
-                    while ((localRunList.Count > 0) && (m_pendingNodeCount < m_buildOptions.MaxConcurrency)) {
-                        //  launch one thing
-                        BuildNode buildNode = localRunList.Dequeue();
-                        m_issuedNodeCount += 1;
-                        m_pendingNodeCount += 1;
-                        ThreadPool.QueueUserWorkItem(unused => DoAction(action, buildNode));
-                    }
-                }
-
-                bool completionSuccess = WaitForOneOrMorePendingNodes();
-                if (!completionSuccess) {
-                    return false;
+                completionSuccess &= WaitForOneOrMorePendingNodes();
+                if (!completionSuccess && !m_buildOptions.ContinueOnError) {
+                    //  Break out of the dispatch loop.
+                    break;
                 }
             }
 
             //  We have no more BuildNodes left to issue.
-            //  Wait for remaining pending nodes to complete.
+            //  Wait for remaining pending nodes to complete.  We do this even on failure,
+            //  so that we guarantee all work is drained prior to returning.
             while (m_pendingNodeCount > 0) {
-                bool completionSuccess = WaitForOneOrMorePendingNodes();
-                if (!completionSuccess) {
-                    return false;
-                }
+                completionSuccess &= WaitForOneOrMorePendingNodes();
             }
 
-            return true;
+            return completionSuccess;
         }
 
         //  Wait for at least one BuildNode to complete, update state, and return.
         private bool WaitForOneOrMorePendingNodes()
         {
-            lock (m_executedListMutex)
-            {
-                //  Wait for m_completedList to gain one or more elements.
-                if (m_executedList.Count == 0) {
-                    Monitor.Wait(m_executedListMutex);
+            Queue<BuildWorkItem> localReturnList = new Queue<BuildWorkItem>();
+            lock (m_returnListMutex) {
+                //  Wait for m_returnList to gain one or more elements.
+                if (m_returnList.Count == 0) {
+                    Monitor.Wait(m_returnListMutex);
                 }
 
-                //  Quickly drain the executedList.
-                //  All completed BuildNodes will be processed through here.
-                while (m_executedList.Count > 0) {
-                    BuildNode completedNode = m_executedList.Dequeue();
+                //  Quickly drain the returnList.
+                //  All returned BuildNodes will be processed through here.
+                while (m_returnList.Count > 0) {
+                    BuildWorkItem workItem = m_returnList.Dequeue();
+                    localReturnList.Enqueue(workItem);
+                }
+            }
+
+            while (localReturnList.Count > 0) {
+                BuildWorkItem workItem = localReturnList.Dequeue();
+                workItem.BuildNode.Status = workItem.ReturnedStatus;
+                m_pendingNodeCount -= 1;
+
+                //  Update dependent nodes and performance counters.
+                if (workItem.BuildNode.Status == BuildStatus.ExecuteSucceeded ||
+                    workItem.BuildNode.Status == BuildStatus.ExecuteFailed) {
                     m_completedNodeCount += 1;
-                    m_pendingNodeCount -= 1;
+                    m_buildResults.ExecutedCount += 1;
+                    Console.WriteLine("BuildNode Completed : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
+                    NotifyBuildNodeCompletion(workItem.BuildNode);
+                }
+                else if (workItem.BuildNode.Status == BuildStatus.TranslationUpToDate) {
+                    m_completedNodeCount += 1;
+                    m_buildResults.UpToDateCount += 1;
+                    Console.WriteLine("BuildNode UpToDate  : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
+                    NotifyBuildNodeCompletion(workItem.BuildNode);
+                }
+                else if (workItem.BuildNode.Status == BuildStatus.ImplicitInputsComputed) {
+                    bool implicitDependenciesReady = PropagateDependenciesFromImplicitInputs(workItem.BuildNode);
+                    if (implicitDependenciesReady) {
+                        //  Continue execution of this BuildNode immediately.
+                        workItem.BuildNode.ImplicitInputsUpToDate = true;
+                        ThreadPool.QueueUserWorkItem(unused => DoAction(workItem));
+                        m_pendingNodeCount += 1;
+                    }
 
-                    //  Update counters.
-                    if (completedNode.Status == BuildStatus.ExecuteSucceeded ||
-                        completedNode.Status == BuildStatus.ExecuteFailed) {
-                        m_buildResults.ExecutedCount += 1;
-                    }
-                    else if (completedNode.Status == BuildStatus.TranslationUpToDate) {
-                        m_buildResults.UpToDateCount += 1;
-                    }
-                    else if (completedNode.Status == BuildStatus.ImplicitIONotReady) {
-                        m_buildResults.UpdateImplicitIOCount += 1;
-                    }
+                    m_buildResults.UpdateImplicitInputsCount += 1;
+                }
 
-                    if (completedNode.Status.Succeeded()) {
-                        //  Trace creation of each output file.
-                        foreach (var output in completedNode.Translation.ExplicitOutputs) {
-                            Trace.TraceInformation("Generated Output {0}", output);
-                        }
+                if (workItem.BuildNode.Status.Succeeded()) {
+                    //  Trace creation of each output file.
+                    foreach (var output in workItem.BuildNode.Translation.ExplicitOutputs) {
+                        Trace.TraceInformation("Generated Output {0}", output);
                     }
-                    else if (completedNode.Status.Failed()) {
-                        Trace.TraceError("Error while running Translation for {0}.", completedNode.Translation.BuildFileBaseName);
-                        if (!m_buildOptions.ContinueOnError) {
-                            return false;
-                        }
+                }
+                else if (workItem.BuildNode.Status.Failed()) {
+                    Trace.TraceError("Error while running Translation for {0}.", workItem.BuildNode.Translation.BuildFileBaseName);
+                    if (!m_buildOptions.ContinueOnError) {
+                        return false;
                     }
                 }
             }
+
             return true;
         }
 
         private bool AllDependenciesExecuted(BuildNode buildNode)
         {
             foreach (BuildNode dependency in buildNode.Dependencies) {
+                if (!m_requiredNodes.Contains(dependency)) {
+                    continue;
+                }
+
                 if (!dependency.Status.Executed()) {
                     return false; 
                 }
@@ -213,43 +233,29 @@ namespace QRBuild
             return true;
         }
 
-        private void NotifyBuildNodeCompletion(BuildNode buildNode, BuildStatus status)
+        private void NotifyBuildNodeCompletion(BuildNode buildNode)
         {
-            lock (m_buildNodesMutex) {
-                buildNode.Status = status;
-
-                if (buildNode.Status.Executed()) {
-                    foreach (var consumer in buildNode.Consumers) {
-                        bool consumerReady = AllDependenciesExecuted(consumer);
-                        if (consumerReady) {
-                            lock (m_runListMutex) {
-                                m_runSet.Add(consumer);
-                                m_runList.Enqueue(consumer);
-                                Monitor.Pulse(m_runListMutex);
-                            }
-                        }
-                    }
+            foreach (BuildNode consumer in buildNode.Consumers) {
+                //  Skip consumers that aren't part of this build.
+                if (!m_requiredNodes.Contains(consumer)) {
+                    continue;
                 }
 
-                lock (m_executedListMutex) {
-                    m_executedList.Enqueue(buildNode);
-                    Monitor.Pulse(m_executedListMutex);
+                bool consumerReady = AllDependenciesExecuted(consumer);
+                if (consumerReady) {
+                    m_runList.Enqueue(consumer);
+                    m_runSet.Add(consumer);
                 }
             }
         }
 
-        private void DoAction(BuildAction action, BuildNode buildNode)
+        private void DoAction(BuildWorkItem workItem)
         {
-            lock (m_buildNodesMutex)
-            {
-                buildNode.Status = BuildStatus.InProgress;
+            BuildNode buildNode = workItem.BuildNode;            
+            if (m_buildAction == BuildAction.Build) {
+                workItem.ReturnedStatus = ExecuteOneBuildNode(buildNode);
             }
-
-            BuildStatus status;
-            if (action == BuildAction.Build) {
-                status = ExecuteOneBuildNode(buildNode);
-            }
-            else if (action == BuildAction.Clean) {
+            else if (m_buildAction == BuildAction.Clean) {
                 foreach (var output in buildNode.Translation.ExplicitOutputs) {
                     File.Delete(output);
                 }
@@ -261,15 +267,18 @@ namespace QRBuild
                     File.Delete(output);
                 }
                 File.Delete(buildNode.Translation.DepsCacheFilePath);
-                status = BuildStatus.ExecuteSucceeded;
+                workItem.ReturnedStatus = BuildStatus.ExecuteSucceeded;
             }
             
             else {
                 //  Unhandled action.
-                status = BuildStatus.FailureUnknown;
+                workItem.ReturnedStatus = BuildStatus.FailureUnknown;
             }
 
-            NotifyBuildNodeCompletion(buildNode, status);
+            lock (m_returnListMutex) {
+                m_returnList.Enqueue(workItem);
+                Monitor.Pulse(m_returnListMutex);
+            }
         }
 
         /// Executes the Translation associated with buildNode, if all dependencies
@@ -279,56 +288,76 @@ namespace QRBuild
         private BuildStatus ExecuteOneBuildNode(BuildNode buildNode)
         {
             //  depsCache file opened for exclusive access here.  
-            using (FileStream depsCacheFileStream = new FileStream(buildNode.Translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-            {
-                string prevDepsCacheFileContents = QRFileStream.ReadAllText(depsCacheFileStream);
-                buildNode.Translation.ImplicitInputs.Clear();
-                buildNode.Translation.ImplicitOutputs.Clear();
-                if (buildNode.Translation.RequiresImplicitInputs ||
-                    buildNode.Translation.GeneratesImplicitOutputs) {
-                    //  Pretend that the implicit IOs from a previous build apply to the current
-                    //  build state.  This allows comparing current and previous state.
-                    DependencyCache.LoadImplicitIO(prevDepsCacheFileContents, buildNode.Translation.ImplicitInputs, buildNode.Translation.ImplicitOutputs);
-                }
+            using (FileStream depsCacheFileStream = new FileStream(buildNode.Translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
+                if (!buildNode.Translation.RequiresImplicitInputs) {
+                    string prevDepsCacheFileContents = QRFileStream.ReadAllText(depsCacheFileStream);
+                    bool requiresBuild = RequiresBuild(buildNode, prevDepsCacheFileContents);
+                    if (!requiresBuild) {
+                        //  success!  we can early-exit
+                        return BuildStatus.TranslationUpToDate;
+                    }
 
-                if (!RequiresBuild(buildNode, prevDepsCacheFileContents)) {
-                    //  success!  we can early-exit
-                    return BuildStatus.TranslationUpToDate;
-                }
+                    //  Ensure explicit inputs exist prior to execution.
+                    //  This must be done here since Translation.Execute() is not expected to do the checks.
+                    bool explicitInputsExist = FilesExist(buildNode.Translation.ExplicitInputs);
+                    if (!explicitInputsExist) {
+                        //  failed.  some input does not exist
+                        return BuildStatus.InputsDoNotExist;
+                    }
 
-                //  Ensure inputs exist prior to execution.
-                //  This must be done here since Translation.Execute() is not
-                //  expected to do the checks.
-                if (!FilesExist(buildNode.Translation.ExplicitInputs)) {
-                    //  failed.  some input does not exist
-                    WriteDepsCacheFile(depsCacheFileStream, buildNode);
-                    return BuildStatus.InputsDoNotExist;
+                    //  fall through to Execute()
                 }
+                else { // buildNode.Translation.RequiresImplicitInputs
+                    if (!buildNode.ImplicitInputsUpToDate) {
+                        string prevDepsCacheFileContents = QRFileStream.ReadAllText(depsCacheFileStream);
+                        bool requiresBuild = RequiresBuild(buildNode, prevDepsCacheFileContents);
+                        if (!requiresBuild) {
+                            //  success!  we can early-exit
+                            return BuildStatus.TranslationUpToDate;
+                        }
 
-                //  Since all explicit inputs exist, we can update the implicit IOs.
-                if (buildNode.Translation.RequiresImplicitInputs ||
-                    buildNode.Translation.GeneratesImplicitOutputs) {
-                    buildNode.Translation.UpdateImplicitIO();
-                    bool implicitDependenciesReady = PropagateDependenciesFromImplicitIO(buildNode);
-                    if (!implicitDependenciesReady) {
-                        //  Clear the deps cache, so this node must re-execute when inputs are ready.
-                        depsCacheFileStream.SetLength(0);
-                        return BuildStatus.ImplicitIONotReady;
+                        //  Ensure explicit inputs exist prior to execution.
+                        //  This must be done here since Translation.Execute() is not expected to do the checks.
+                        bool explicitInputsExist = FilesExist(buildNode.Translation.ExplicitInputs);
+                        if (!explicitInputsExist) {
+                            //  failed.  some input does not exist
+                            return BuildStatus.InputsDoNotExist;
+                        }
+
+                        //  Since all explicit inputs exist, we can update the implicit IOs.
+                        buildNode.Translation.UpdateImplicitIO();
+                        return BuildStatus.ImplicitInputsComputed;
+                    }
+                    else { // buildNode.ImplicitInputsUpToDate
+                        //  Ensure explicit inputs exist prior to execution.
+                        //  This must be done here since Translation.Execute() is not expected to do the checks.
+                        bool explicitInputsExist = FilesExist(buildNode.Translation.ExplicitInputs);
+                        if (!explicitInputsExist) {
+                            //  failed.  some input does not exist
+                            return BuildStatus.InputsDoNotExist;
+                        }
+                        
+                        //  Ensure inputs exist prior to execution.
+                        //  This must be done here since Translation.Execute() is not expected to do the checks.
+                        bool implicitInputsExist = FilesExist(buildNode.Translation.ImplicitInputs);
+                        if (!implicitInputsExist) {
+                            //  failed.  some input does not exist
+                            return BuildStatus.InputsDoNotExist;
+                        }
+
+                        //  fall through to Execute()
                     }
                 }
 
                 bool executeSucceeded = false;
-                try
-                {
+                try {
                     executeSucceeded = buildNode.Translation.Execute();
                 }
-                catch (System.Exception)
-                {
+                catch (System.Exception) {
                 	//  TODO: log the error
                 }
                 if (!executeSucceeded) {
                     //  Clear the deps cache, so this failed node must execute on the next build.
-                    depsCacheFileStream.SetLength(0);
                     return BuildStatus.ExecuteFailed;
                 }
 
@@ -346,59 +375,69 @@ namespace QRBuild
             QRFileStream.WriteAllText(depsCacheFileStream, depsCacheString);
         }
 
-        private bool PropagateDependenciesFromImplicitIO(BuildNode buildNode)
+        private bool PropagateDependenciesFromImplicitInputs(BuildNode buildNode)
         {
             bool implicitDependenciesReady = true;
-            lock (m_buildNodesMutex)
-            {
-                //  Create BuildFiles for ImplicitInputs and .
-                foreach (string path in buildNode.Translation.ImplicitInputs) {
-                    BuildFile buildFile = m_buildGraph.CreateOrGetBuildFile(path);
-                    if (buildFile.BuildNode != null) {
-                        buildNode.Dependencies.Add(buildFile.BuildNode);
-                        buildFile.Consumers.Add(buildNode);
-                        if (!buildFile.BuildNode.Status.Executed()) {
-                            implicitDependenciesReady = false;
-                        }
-                    }
-                }
 
-                //  Set BuildFile.BuildNode for each implicit output.
-                //  Find all immediate consumers of the ImplicitOutputs, and update the
-                //  dependency relationship between buildNode and the immediate consumers.
-                HashSet<BuildNode> immediateConsumers = new HashSet<BuildNode>();
-                foreach (string path in buildNode.Translation.ImplicitOutputs) {
-                    BuildFile buildFile = m_buildGraph.CreateOrGetBuildFile(path);
-                    immediateConsumers.AddRange(buildFile.Consumers);
-                    if (buildFile.BuildNode == null) {
-                        buildFile.BuildNode = buildNode;
-                    }
-                    else {
-                        Trace.TraceError("Target {0} claims to be generated by more than one Translation:\n\t{1}\n\t{2}\n",
-                            buildFile.Path,
-                            buildFile.BuildNode.Translation.BuildFileBaseName,
-                            buildNode.Translation.BuildFileBaseName);
+            //  Create BuildFiles for ImplicitInputs and update Dependencies/Consumers.
+            foreach (string path in buildNode.Translation.ImplicitInputs) {
+                BuildFile buildFile = m_buildGraph.CreateOrGetBuildFile(path);
+                if (buildFile.BuildNode != null) {
+                    buildNode.Dependencies.Add(buildFile.BuildNode);
+                    buildFile.Consumers.Add(buildNode);
+                    if (!buildFile.BuildNode.Status.Executed()) {
+                        implicitDependenciesReady = false;
                     }
                 }
-                
-                //  Add consumers to the build process. 
-                AddAllConsumersToBuildProcess(immediateConsumers);
             }
+
             return implicitDependenciesReady;
         }
 
-        private void AddAllConsumersToBuildProcess(IEnumerable<BuildNode> buildNodes)
+        private bool PropagateDependenciesFromImplicitOutputs(BuildNode buildNode)
+        {
+            bool buildSuccess = true;
+            
+            //  Set BuildFile.BuildNode for each implicit output.
+            //  Find all immediate consumers of the ImplicitOutputs, and update the
+            //  dependency relationship between buildNode and its immediate consumers.
+            HashSet<BuildNode> immediateConsumers = new HashSet<BuildNode>();
+            foreach (string path in buildNode.Translation.ImplicitOutputs) {
+                BuildFile buildFile = m_buildGraph.CreateOrGetBuildFile(path);
+                immediateConsumers.AddRange(buildFile.Consumers);
+                if (buildFile.BuildNode == null) {
+                    buildFile.BuildNode = buildNode;
+                }
+                else {
+                    Trace.TraceError("Target {0} claims to be generated by more than one Translation:\n\t{1}\n\t{2}\n",
+                        buildFile.Path,
+                        buildFile.BuildNode.Translation.BuildFileBaseName,
+                        buildNode.Translation.BuildFileBaseName);
+                    buildSuccess = false;
+                }
+            }
+
+            //  Add consumers to the build process. 
+            ReactivateStaleConsumers(immediateConsumers);
+
+            return buildSuccess;
+        }
+
+        /// Iterate through all consumers of buildNodes.
+        /// If the consumers are part of the required nodes for this build, then
+        /// enqueue them to run again.  This ensure that everyone "downstream" of
+        /// buildNodes will get a chance to update themselves.
+        private void ReactivateStaleConsumers(IEnumerable<BuildNode> buildNodes)
         {
             var stack = new Stack<BuildNode>();
             stack.AddRange(buildNodes);
 
             HashSet<BuildNode> runSet = new HashSet<BuildNode>();
-            HashSet<BuildNode> requiredNodes = new HashSet<BuildNode>();
+            HashSet<BuildNode> visitedNodes = new HashSet<BuildNode>();
 
             while (stack.Count > 0) {
                 BuildNode currentNode = stack.Pop();
-
-                requiredNodes.Add(currentNode);
+                visitedNodes.Add(currentNode);
 
                 if (AllDependenciesExecuted(currentNode)) {
                     runSet.Add(currentNode);
@@ -406,23 +445,15 @@ namespace QRBuild
 
                 //  Add all consumers.
                 foreach (BuildNode buildNode in currentNode.Consumers) {
-                    if (!requiredNodes.Contains(buildNode)) {
+                    if (!visitedNodes.Contains(buildNode)) {
                         stack.Push(buildNode);
                     }
                 }
             }
 
-            //  Copy requiredNodes into m_requiredNodes.
-            foreach (BuildNode requiredNode in requiredNodes) {
-                if (!m_requiredNodes.Contains(requiredNode)) {
-                    m_requiredNodes.Add(requiredNode);
-                    m_requiredNodeCount += 1;
-                }
-            }
-            
             //  Copy runSet into m_runSet/m_runList.
             foreach (var buildNode in runSet) {
-                if (!m_runSet.Contains(buildNode)) {
+                if (m_requiredNodes.Contains(buildNode) && !m_runSet.Contains(buildNode)) {
                     m_runSet.Add(buildNode);
                     m_runList.Enqueue(buildNode);
                 }
@@ -464,31 +495,23 @@ namespace QRBuild
         ///-----------------------------------------------------------------
         /// Private members
 
-        /// This mutex serializes access to the following:
-        /// - BuildNode.Dependencies and
-        /// - BuildNode.Consumers, 
-        /// - m_requiredNodes
-        /// - m_buildGraph
-        private readonly object m_buildNodesMutex = new object();
         /// m_requiredNodes contains all nodes that must be executed.
         private readonly HashSet<BuildNode> m_requiredNodes = new HashSet<BuildNode>();
 
-        private volatile int m_requiredNodeCount = 0;
-        private volatile int m_issuedNodeCount = 0;
-        private volatile int m_completedNodeCount = 0;
-        private volatile int m_pendingNodeCount = 0;
+        private int m_completedNodeCount = 0;
+        private int m_pendingNodeCount = 0;
 
         //  The run list contains currently executing nodes.
-        private readonly object m_runListMutex = new object();
         private readonly HashSet<BuildNode> m_runSet = new HashSet<BuildNode>();
         private readonly Queue<BuildNode> m_runList = new Queue<BuildNode>();
 
         //  The executed list contains nodes that have executed,
         //  but have not yet been added to m_completedNodes.
-        private readonly object m_executedListMutex = new object();
-        private readonly Queue<BuildNode> m_executedList = new Queue<BuildNode>();
+        private readonly object m_returnListMutex = new object();
+        private readonly Queue<BuildWorkItem> m_returnList = new Queue<BuildWorkItem>();
 
         private readonly BuildGraph m_buildGraph;
+        private readonly BuildAction m_buildAction;
         private readonly BuildOptions m_buildOptions;
         private readonly BuildResults m_buildResults;
     }

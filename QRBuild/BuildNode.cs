@@ -14,6 +14,21 @@ namespace QRBuild
 
         public readonly BuildTranslation Translation;
 
+        public void Reset()
+        {
+            Translation.ExplicitInputs.Clear();
+            Translation.ExplicitOutputs.Clear();
+            Translation.ImplicitInputs.Clear();
+            Translation.ImplicitOutputs.Clear();
+            Status = BuildStatus.NotStarted;
+            Dependencies.Clear();
+            Consumers.Clear();
+            ImplicitInputsUpToDate = false;
+        }
+
+        /// Status of the most recent execution of a BuildProcess.
+        public BuildStatus Status;
+
         /// TODO: add public field for log
 
         /// Immediate dependencies.
@@ -21,7 +36,6 @@ namespace QRBuild
         /// Consumer BuildNodes require this node to complete before they can execute.
         public readonly HashSet<BuildNode> Consumers = new HashSet<BuildNode>();
 
-        /// Status of the most recent execution of a BuildProcess.
-        public BuildStatus Status;
+        public bool ImplicitInputsUpToDate;
     }
 }

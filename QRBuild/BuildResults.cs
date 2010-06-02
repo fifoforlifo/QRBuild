@@ -19,18 +19,17 @@ namespace QRBuild
         /// all inputs and outputs were up-to-date.
         public int UpToDateCount { get; internal set; }
 
-        /// Number of times a Translation's implicit IOs were updated.
-        public int UpdateImplicitIOCount { get; internal set; }
+        /// Number of times a Translation's implicit inputs were updated.
+        public int UpdateImplicitInputsCount { get; internal set; }
 
         /// BuildGraph.Execute() wallclock times.
         public DateTime ExecuteStartTime { get; internal set; }
         public DateTime ExecuteEndTime { get; internal set; }
 
         /// BuildGraph.ComputeDependencies() wallclock times.
-        /// Calling BuildGraph.GetSourceTargets() or GetAllGeneratedTargets()
-        /// will cause the dependencies to be cached, so these times during
-        /// an actual Build could become artificially small.
-        public bool DependenciesComputed { get; internal set; }
+        /// Currently this is called as part of every Execute() call, and could
+        /// consume a non-trivial amount of time.
+        public bool DependenciesValid { get; internal set; }
         public DateTime ComputeDependenciesStartTime { get; internal set; }
         public DateTime ComputeDependenciesEndTime { get; internal set; }
     }
