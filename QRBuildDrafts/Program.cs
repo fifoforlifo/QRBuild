@@ -5,14 +5,27 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using QRBuild.Translations;
 using QRBuild.Translations.ToolChain.Msvc9;
 using QRBuild.Translations.ToolChain.MsCsc;
 using QRBuild.Translations.IO;
 using QRBuild.IO;
-using QRBuild.Translations;
 
 namespace QRBuild
 {
+    public class TestHelpers
+    {
+        public static void PrintBuildResults(BuildResults buildResults)
+        {
+            Console.WriteLine("===================================================");
+            Console.WriteLine("BuildResults.Action                = {0}", buildResults.Action);
+            Console.WriteLine("BuildResults.Success               = {0}", buildResults.Success);
+            Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
+            Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
+            Console.WriteLine("BuildResults.UpdateImplicitInputsCount = {0}", buildResults.UpdateImplicitInputsCount);
+        }
+    }
+    
     class Program
     {
         static bool TestLaunchBatchFile()
@@ -44,7 +57,7 @@ ENDLOCAL
             Console.WriteLine("{0} {1}", psi.FileName, psi.Arguments);
 
             try {
-                File.Delete(logPath);
+                QRFile.Delete(logPath);
                 using (Process process = Process.Start(psi)) {
                     // TODO: need to wait on cancellation as well?
                     process.WaitForExit();
@@ -191,7 +204,7 @@ ENDLOCAL
             Console.WriteLine("BuildResults.TranslationCount = {0}", buildResults.TranslationCount);
             Console.WriteLine("BuildResults.UpToDateCount    = {0}", buildResults.UpToDateCount);
 
-            //QRPath.Delete(a, b, c, d);
+            //QRFile.Delete(a, b, c, d);
         }
 
         class CompileLink1
@@ -219,16 +232,6 @@ ENDLOCAL
                 ccp.CppExceptions = Msvc9CppExceptions.Enabled;
                 var cc = new Msvc9Compile(buildGraph, ccp);
                 return cc;
-            }
-
-            static void PrintBuildResults(BuildResults buildResults)
-            {
-                Console.WriteLine("===================================================");
-                Console.WriteLine("BuildResults.Action                = {0}", buildResults.Action);
-                Console.WriteLine("BuildResults.Success               = {0}", buildResults.Success);
-                Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
-                Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
-                Console.WriteLine("BuildResults.UpdateImplicitInputsCount = {0}", buildResults.UpdateImplicitInputsCount);
             }
 
             public static void TestCppCompileLink()
@@ -272,14 +275,14 @@ ENDLOCAL
                 string[] targets = { link.Params.OutputFilePath };
 
                 BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-                PrintBuildResults(cleanBuildResults);
+                TestHelpers.PrintBuildResults(cleanBuildResults);
                 BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-                PrintBuildResults(incrementalBuildResults);
+                TestHelpers.PrintBuildResults(incrementalBuildResults);
 
                 bool doClean = true;
                 if (doClean) {
                     BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
-                    PrintBuildResults(cleanResults);
+                    TestHelpers.PrintBuildResults(cleanResults);
                 }
             }
         }
@@ -305,8 +308,14 @@ ENDLOCAL
             TestDependencyChain();
 #endif
 
+#if false
             for (int i = 0; i < 100; i++) {
                 CompileLink1.TestCppCompileLink();
+            }
+#endif
+
+            for (int i = 0; i < 100; i++) {
+                GeneratedHeaderTest.DoTest();
             }
 
             Console.WriteLine(">> Press a key");

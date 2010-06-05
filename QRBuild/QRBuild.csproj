@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\QRFile.cs" />
     <Compile Include="Translations\ToolChain\Msvc9\Msvc9Compile.cs" />
     <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileExtensions.cs" />
     <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileParams.cs" />

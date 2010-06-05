@@ -36,6 +36,7 @@ namespace QRBuild
         /// Consumer BuildNodes require this node to complete before they can execute.
         public readonly HashSet<BuildNode> Consumers = new HashSet<BuildNode>();
 
+        /// If true, when this BuildNode is launched again, the Translation.Execute() will be called.
         public bool ImplicitInputsUpToDate;
     }
 }

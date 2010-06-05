@@ -120,6 +120,13 @@ namespace QRBuild
             return buildFile;
         }
 
+        internal BuildFile GetBuildFile(string filePath)
+        {
+            BuildFile buildFile;
+            m_buildFiles.TryGetValue(filePath, out buildFile);
+            return buildFile;
+        }
+
 
         //-- Helpers
 

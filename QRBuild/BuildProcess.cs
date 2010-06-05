@@ -257,16 +257,16 @@ namespace QRBuild
             }
             else if (m_buildAction == BuildAction.Clean) {
                 foreach (var output in buildNode.Translation.ExplicitOutputs) {
-                    File.Delete(output);
+                    QRFile.Delete(output);
                 }
                 foreach (var output in buildNode.Translation.ImplicitOutputs) {
-                    File.Delete(output);
+                    QRFile.Delete(output);
                 }
                 HashSet<string> intermediateBuildFiles = buildNode.Translation.GetIntermediateBuildFiles();
                 foreach (var output in intermediateBuildFiles) {
-                    File.Delete(output);
+                    QRFile.Delete(output);
                 }
-                File.Delete(buildNode.Translation.DepsCacheFilePath);
+                QRFile.Delete(buildNode.Translation.DepsCacheFilePath);
                 workItem.ReturnedStatus = BuildStatus.ExecuteSucceeded;
             }
             
@@ -384,9 +384,18 @@ namespace QRBuild
                 BuildFile buildFile = m_buildGraph.CreateOrGetBuildFile(path);
                 if (buildFile.BuildNode != null) {
                     buildNode.Dependencies.Add(buildFile.BuildNode);
+                    buildFile.BuildNode.Consumers.Add(buildNode);
                     buildFile.Consumers.Add(buildNode);
                     if (!buildFile.BuildNode.Status.Executed()) {
                         implicitDependenciesReady = false;
+                    }
+                    if (!m_requiredNodes.Contains(buildFile.BuildNode)) {
+                        m_requiredNodes.Add(buildFile.BuildNode);
+                        bool generatorReady = AllDependenciesExecuted(buildFile.BuildNode);
+                        if (generatorReady) {
+                            m_runList.Enqueue(buildFile.BuildNode);
+                            m_runSet.Add(buildFile.BuildNode);
+                        }
                     }
                 }
             }
