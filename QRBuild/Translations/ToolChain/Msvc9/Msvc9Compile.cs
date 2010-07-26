@@ -169,7 +169,7 @@ EXIT %ERRORLEVEL%
             }
         }
 
-        protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
+        protected override bool ComputeImplicitIO(HashSet<string> inputs)
         {
             string responseFile = m_params.ToPreProcessorArgumentString(true);
             string responseFilePath = GetPpResponseFilePath();

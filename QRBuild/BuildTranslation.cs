@@ -53,14 +53,10 @@ namespace QRBuild
         {
             get { return m_explicitOutputs; }
         }
-        /// Inputs that are determined based on the contents of ExplicitInputs.
+        /// Inputs that are determined based on the file contents of ExplicitInputs.
         public HashSet<string> ImplicitInputs
         {
             get { return m_implicitInputs; }
-        }
-        public HashSet<string> ImplicitOutputs
-        {
-            get { return m_implicitOutputs; }
         }
 
         /// Causes ExplicitInputs and ExplicitOutputs to be updated.
@@ -73,11 +69,10 @@ namespace QRBuild
             ExplicitOutputs.AddRange(ForcedOutputs);
         }
         /// Causes ImplicitInputs and ImplicitOutputs to be updated.
-        public bool UpdateImplicitIO()
+        public bool UpdateImplicitInputs()
         {
             ImplicitInputs.Clear();
-            ImplicitOutputs.Clear();
-            bool implicitInputsKnown = ComputeImplicitIO(ImplicitInputs, ImplicitOutputs);
+            bool implicitInputsKnown = ComputeImplicitIO(ImplicitInputs);
             return implicitInputsKnown;
         }
 
@@ -136,7 +131,7 @@ namespace QRBuild
         protected abstract void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs);
 
         /// Implementors compute implicit inputs and outputs.
-        protected abstract bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs);
+        protected abstract bool ComputeImplicitIO(HashSet<string> inputs);
 
 
         ///-----------------------------------------------------------------

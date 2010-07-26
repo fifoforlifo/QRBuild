@@ -154,7 +154,7 @@ EXIT %ERRORLEVEL%
             }
         }
 
-        protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
+        protected override bool ComputeImplicitIO(HashSet<string> inputs)
         {
             return true;
         }

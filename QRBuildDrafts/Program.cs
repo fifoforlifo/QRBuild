@@ -117,7 +117,7 @@ ENDLOCAL
             csc.Execute();
 
             csc.UpdateExplicitIO();
-            csc.UpdateImplicitIO();
+            csc.UpdateImplicitInputs();
 
             string depsCache = DependencyCache.CreateDepsCacheString(csc, new FileSizeDateDecider());
             File.WriteAllText(csc.BuildFileBaseName + "__qr__.deps", depsCache);
@@ -139,14 +139,13 @@ ENDLOCAL
             cc.Execute();
 
             cc.UpdateExplicitIO();
-            cc.UpdateImplicitIO();
+            cc.UpdateImplicitInputs();
 
             string depsCache = DependencyCache.CreateDepsCacheString(cc, new FileSizeDateDecider());
             File.WriteAllText(cc.DepsCacheFilePath, depsCache);
 
             HashSet<string> implicitInputs = new HashSet<string>();
-            HashSet<string> implicitOutputs = new HashSet<string>();
-            DependencyCache.LoadDepsCacheImplicitIO(cc.DepsCacheFilePath, implicitInputs, implicitOutputs);
+            DependencyCache.LoadDepsCacheImplicitIO(cc.DepsCacheFilePath, implicitInputs);
         }
 
         static void TestSingleNodeGraph()

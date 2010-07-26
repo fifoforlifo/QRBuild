@@ -112,15 +112,9 @@ EXIT %ERRORLEVEL%
             if (!String.IsNullOrEmpty(m_params.PdbFilePath)) {
                 outputs.Add(m_params.PdbFilePath);
             }
-#if false
-            // TODO: need a way to make this info available for Clean without polluting Build
-            outputs.Add(GetBatchFilePath());
-            outputs.Add(GetResponseFilePath());
-            outputs.Add(GetBuildLogFilePath());
-#endif
         }
 
-        protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
+        protected override bool ComputeImplicitIO(HashSet<string> inputs)
         {
             return true;
         }

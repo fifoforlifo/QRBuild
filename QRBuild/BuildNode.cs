@@ -19,7 +19,6 @@ namespace QRBuild
             Translation.ExplicitInputs.Clear();
             Translation.ExplicitOutputs.Clear();
             Translation.ImplicitInputs.Clear();
-            Translation.ImplicitOutputs.Clear();
             Status = BuildStatus.NotStarted;
             Dependencies.Clear();
             Consumers.Clear();

@@ -82,7 +82,7 @@ namespace QRBuild.Translations.IO
             outputs.Add(m_destination);
         }
 
-        protected override bool ComputeImplicitIO(HashSet<string> inputs, HashSet<string> outputs)
+        protected override bool ComputeImplicitIO(HashSet<string> inputs)
         {
             return true;
         }

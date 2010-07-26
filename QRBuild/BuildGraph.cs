@@ -220,14 +220,13 @@ namespace QRBuild
                 //  into the parallel initialization, since each BuildNode is independent.
                 using (FileStream depsCacheFileStream = new FileStream(translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     string prevDepsCacheFileContents = QRFileStream.ReadAllText(depsCacheFileStream);
-                    DependencyCache.LoadImplicitIO(prevDepsCacheFileContents, translation.ImplicitInputs, translation.ImplicitOutputs);
+                    DependencyCache.LoadImplicitInputs(prevDepsCacheFileContents, translation.ImplicitInputs);
                 }
             }
 
             //  Ensure existence of all BuildFile objects and BuildFile.BuildNode correctness.
             foreach (BuildTranslation translation in m_translations) {
                 result &= AddOutputDependencies(translation, translation.ExplicitOutputs);
-                result &= AddOutputDependencies(translation, translation.ImplicitOutputs);
             }
 
             //  Establish BuildNode<->BuildNode dependencies based on inputs.

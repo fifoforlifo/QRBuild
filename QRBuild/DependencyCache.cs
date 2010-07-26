@@ -18,7 +18,6 @@ namespace QRBuild
             SortedDictionary<string, string> eiVersions = new SortedDictionary<string, string>();
             SortedDictionary<string, string> eoVersions = new SortedDictionary<string, string>();
             SortedDictionary<string, string> iiVersions = new SortedDictionary<string, string>();
-            SortedDictionary<string, string> ioVersions = new SortedDictionary<string, string>();
 
             foreach (var filePath in translation.ExplicitInputs) {
                 string versionStamp = fileDecider.GetVersionStamp(filePath);
@@ -32,10 +31,6 @@ namespace QRBuild
                 string versionStamp = fileDecider.GetVersionStamp(filePath);
                 iiVersions[filePath] = versionStamp;
             }
-            foreach (var filePath in translation.ImplicitOutputs) {
-                string versionStamp = fileDecider.GetVersionStamp(filePath);
-                ioVersions[filePath] = versionStamp;
-            }
 
             string translationParameters = translation.GetCacheableTranslationParameters();
             if (translationParameters == null) {
@@ -43,20 +38,16 @@ namespace QRBuild
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("__ImplicitInputs:\n");
-            foreach (var kvp in iiVersions) {
-                sb.AppendFormat("\t{0} >> {1}\n", kvp.Key, kvp.Value);
-            }
-            sb.Append("__ImplicitOutputs:\n");
-            foreach (var kvp in ioVersions) {
-                sb.AppendFormat("\t{0} >> {1}\n", kvp.Key, kvp.Value);
-            }
             sb.Append("__ExplicitInputs:\n");
             foreach (var kvp in eiVersions) {
                 sb.AppendFormat("\t{0} >> {1}\n", kvp.Key, kvp.Value);
             }
             sb.Append("__ExplicitsOutputs:\n");
             foreach (var kvp in eoVersions) {
+                sb.AppendFormat("\t{0} >> {1}\n", kvp.Key, kvp.Value);
+            }
+            sb.Append("__ImplicitInputs:\n");
+            foreach (var kvp in iiVersions) {
                 sb.AppendFormat("\t{0} >> {1}\n", kvp.Key, kvp.Value);
             }
             sb.Append("__Params:\n");
@@ -66,10 +57,9 @@ namespace QRBuild
             return result;
         }
 
-        public static void LoadImplicitIO(
+        public static void LoadImplicitInputs(
             string depsCacheFileContents,
-            HashSet<string> implicitInputs,
-            HashSet<string> implicitOutputs)
+            HashSet<string> implicitInputs)
         {
             HashSet<string> currentSet = null;
 
@@ -82,10 +72,6 @@ namespace QRBuild
 
                     if (line == "__ImplicitInputs:") {
                         currentSet = implicitInputs;
-                        continue;
-                    }
-                    else if (line == "__ImplicitOutputs:") {
-                        currentSet = implicitOutputs;
                         continue;
                     }
                     else if (line.StartsWith("_")) {
@@ -110,11 +96,10 @@ namespace QRBuild
 
         public static void LoadDepsCacheImplicitIO(
             string filePath,
-            HashSet<string> implicitInputs,
-            HashSet<string> implicitOutputs)
+            HashSet<string> implicitInputs)
         {
             string fileContents = File.ReadAllText(filePath);
-            LoadImplicitIO(fileContents, implicitInputs, implicitOutputs);
+            LoadImplicitInputs(fileContents, implicitInputs);
         }
     }
 }
