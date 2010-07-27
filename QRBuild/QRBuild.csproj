@@ -46,9 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\QRFile.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9Compile.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileExtensions.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9CompileParams.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcCompile.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcCompileExtensions.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcCompileParams.cs" />
     <Compile Include="BuildAction.cs" />
     <Compile Include="BuildGraph.cs" />
     <Compile Include="BuildNode.cs" />
@@ -70,10 +70,10 @@
     <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileParams.cs" />
     <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9Link.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9LinkerExtensions.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9LinkerParams.cs" />
-    <Compile Include="Translations\ToolChain\Msvc9\Msvc9Utility.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLink.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerExtensions.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerParams.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcUtility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -8,17 +8,17 @@ using QRBuild.IO;
 using QRBuild.Linq;
 using QRBuild.Translations;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
-    public sealed class Msvc9Link : BuildTranslation
+    public sealed class MsvcLink : BuildTranslation
     {
-        public Msvc9Link(BuildGraph buildGraph, Msvc9LinkerParams p)
+        public MsvcLink(BuildGraph buildGraph, MsvcLinkerParams p)
             : base(buildGraph)
         {
             m_params = p.Canonicalize();
         }
 
-        public Msvc9LinkerParams Params
+        public MsvcLinkerParams Params
         {
             get { return m_params; }
         }
@@ -31,7 +31,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
 
             string logFilePath = GetBuildLogFilePath();
 
-            string vcvarsBatchFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
+            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             if (!File.Exists(vcvarsBatchFilePath)) {
                 throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
             }
@@ -124,18 +124,18 @@ EXIT %ERRORLEVEL%
             // DefaultLib and NoDefaultLib are not tracked.
 
             // Add known toolchain binaries to the inputs.
-            string vcvarsFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
+            string vcvarsFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             inputs.Add(vcvarsFilePath);
-            if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetX86) {
+            if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetX86) {
                 string clPath = QRPath.GetCanonical(Path.Combine(m_params.VcBinDir, "link.exe"));
                 inputs.Add(clPath);
             }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetAmd64) {
+            else if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetAmd64) {
                 string clPath = QRPath.GetCanonical(
                     Path.Combine(Path.Combine(m_params.VcBinDir, "x86_amd64"), "link.exe"));
                 inputs.Add(clPath);
             }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsAmd64TargetAmd64) {
+            else if (m_params.ToolChain == MsvcToolChain.ToolsAmd64TargetAmd64) {
                 string clPath = QRPath.GetCanonical(
                     Path.Combine(Path.Combine(m_params.VcBinDir, "amd64"), "link.exe"));
                 inputs.Add(clPath);
@@ -172,7 +172,7 @@ EXIT %ERRORLEVEL%
             return BuildFileBaseName + "__qr__.log";
         }
 
-        private readonly Msvc9LinkerParams m_params;
+        private readonly MsvcLinkerParams m_params;
         private string m_buildFileBaseName;
     }
 }

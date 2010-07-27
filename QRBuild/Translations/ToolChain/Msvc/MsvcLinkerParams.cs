@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
-    public enum Msvc9ClrImageType
+    public enum MsvcClrImageType
     {
         Default,
         IJW,
@@ -12,14 +12,14 @@ namespace QRBuild.Translations.ToolChain.Msvc9
     }
 
     [Flags]
-    public enum Msvc9Force
+    public enum MsvcForce
     {
         Default = Multiple | Unresolved,
         Multiple = 1,
         Unresolved = 2,
     }
 
-    public enum Msvc9SubSystem
+    public enum MsvcSubSystem
     {
         None,
         Console,
@@ -28,7 +28,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         Posix,
     }
     
-    public enum Msvc9OptRef
+    public enum MsvcOptRef
     {
         Default,
         /// /OPT:REF causes unreferenced symbols to be deadstripped
@@ -37,9 +37,9 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         OptNoRef,
     }
 
-    public class Msvc9LinkerParams
+    public class MsvcLinkerParams
     {
-        public Msvc9LinkerParams()
+        public MsvcLinkerParams()
         {
         }
 
@@ -50,7 +50,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         /// 32-bit OS : %ProgramFiles%\Microsoft Visual Studio 9.0\VC\bin
         /// 64-bit OS : %ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin
         public string VcBinDir;
-        public Msvc9ToolChain ToolChain;
+        public MsvcToolChain ToolChain;
         public string AdditionalOptions;
 
         //-- Input
@@ -73,7 +73,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         /// /DLL  (if false, an executable is generated)
         public bool Dll;
         /// /SUBSYSTEM:
-        public Msvc9SubSystem SubSystem;
+        public MsvcSubSystem SubSystem;
         /// /OUT:
         public string OutputFilePath;
         /// /PDB:
@@ -91,7 +91,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         /// /EXPORT:
         public readonly List<string> Export = new List<string>();
         /// /FORCE:
-        public Msvc9Force Force;
+        public MsvcForce Force;
         /// /INCLUDE:
         public readonly List<string> Include = new List<string>();
         /// /INCREMENTAL:NO
@@ -101,7 +101,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         /// /NXCOMPAT:
         public bool NxCompat;
         /// /OPT:REF
-        public Msvc9OptRef OptRef;
+        public MsvcOptRef OptRef;
         /// /STACK:
         public string Stack;
         /// /VERBOSE

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using QRBuild.IO;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
-    public static class Msvc9LinkerExtensions
+    public static class MsvcLinkerExtensions
     {
         private static string FindFileWithExt(IEnumerable<string> paths, string extension)
         {
@@ -19,9 +19,9 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             return null;
         }
         
-        public static Msvc9LinkerParams Canonicalize(this Msvc9LinkerParams p)
+        public static MsvcLinkerParams Canonicalize(this MsvcLinkerParams p)
         {
-            Msvc9LinkerParams o = new Msvc9LinkerParams();
+            MsvcLinkerParams o = new MsvcLinkerParams();
             //-- Meta
             if (String.IsNullOrEmpty(p.VcBinDir)) {
                 throw new InvalidOperationException("VcBinDir not specified");
@@ -118,7 +118,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         }
 
         /// This function assumes p is canonicalized.
-        public static string ToArgumentString(this Msvc9LinkerParams p)
+        public static string ToArgumentString(this MsvcLinkerParams p)
         {
             StringBuilder b = new StringBuilder();
             
@@ -145,16 +145,16 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                 b.Append("/DLL ");
             }
             else {
-                if (p.SubSystem == Msvc9SubSystem.Console) {
+                if (p.SubSystem == MsvcSubSystem.Console) {
                     b.Append("/SUBSYSTEM:CONSOLE ");
                 }
-                else if (p.SubSystem == Msvc9SubSystem.Windows) {
+                else if (p.SubSystem == MsvcSubSystem.Windows) {
                     b.Append("/SUBSYSTEM:WINDOWS ");
                 }
-                else if (p.SubSystem == Msvc9SubSystem.Native) {
+                else if (p.SubSystem == MsvcSubSystem.Native) {
                     b.Append("/SUBSYSTEM:NATIVE ");
                 }
-                else if (p.SubSystem == Msvc9SubSystem.Posix) {
+                else if (p.SubSystem == MsvcSubSystem.Posix) {
                     b.Append("/SUBSYSTEM:POSIX ");
                 }
             }
@@ -179,14 +179,14 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             foreach (string symbol in p.Export) {
                 b.AppendFormat("/EXPORT:{0} ", symbol);
             }
-            if (p.Force != Msvc9Force.Default) {
-                if (p.Force == Msvc9Force.Multiple) {
+            if (p.Force != MsvcForce.Default) {
+                if (p.Force == MsvcForce.Multiple) {
                     b.Append("/FORCE:MULTIPLE ");
                 }
-                else if (p.Force == Msvc9Force.Unresolved) {
+                else if (p.Force == MsvcForce.Unresolved) {
                     b.Append("/FORCE:UNRESOLVED ");
                 }
-                else if (p.Force == Msvc9Force.Multiple) {
+                else if (p.Force == MsvcForce.Multiple) {
                     b.Append("/FORCE:MULTIPLE|UNRESOLVED ");
                 }
             }
@@ -200,10 +200,10 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                 b.Append("/NOASSEMBLY ");
             }
             b.AppendFormat("/NXCOMPAT{0} ", p.NxCompat ? "" : ":NO");
-            if (p.OptRef == Msvc9OptRef.OptRef) {
+            if (p.OptRef == MsvcOptRef.OptRef) {
                 b.Append("/OPT:REF ");
             }
-            else if (p.OptRef == Msvc9OptRef.OptRef) {
+            else if (p.OptRef == MsvcOptRef.OptRef) {
                 b.Append("/OPT:NOREF ");
             }
             if (!String.IsNullOrEmpty(p.Stack)) {

@@ -8,7 +8,7 @@ using QRBuild;
 using QRBuild.IO;
 using QRBuild.Translations;
 using QRBuild.Translations.IO;
-using QRBuild.Translations.ToolChain.Msvc9;
+using QRBuild.Translations.ToolChain.Msvc;
 
 namespace QRBuild
 {
@@ -91,16 +91,16 @@ const char* c();
     public static class GeneratedHeaderTest
     {
         static string vcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
-        static Msvc9ToolChain toolChain = Msvc9ToolChain.ToolsX86TargetX86;
+        static MsvcToolChain toolChain = MsvcToolChain.ToolsX86TargetX86;
         static string compileDir = @"K:\work\code\C#\QRBuild\Tests\GenH";
         static string buildFileDir = @"K:\work\code\C#\QRBuild\Tests\GenH\built";
 
-        static Msvc9Compile CompileOne(BuildGraph buildGraph, string sourceFile)
+        static MsvcCompile CompileOne(BuildGraph buildGraph, string sourceFile)
         {
             string sourceFileName = Path.GetFileName(sourceFile);
             string objName = Path.Combine(buildFileDir, QRPath.ChangeExtension(sourceFileName, ".obj"));
 
-            var ccp = new Msvc9CompileParams();
+            var ccp = new MsvcCompileParams();
             ccp.VcBinDir = vcBinDir;
             ccp.ToolChain = toolChain;
             ccp.CompileDir = compileDir;
@@ -108,10 +108,10 @@ const char* c();
             ccp.SourceFile = sourceFile;
             ccp.ObjectPath = objName;
             ccp.Compile = true;
-            ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+            ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
             ccp.IncludeDirs.Add(@"K:\work\code\lib\boost_1_43_0");
-            ccp.CppExceptions = Msvc9CppExceptions.Enabled;
-            var cc = new Msvc9Compile(buildGraph, ccp);
+            ccp.CppExceptions = MsvcCppExceptions.Enabled;
+            var cc = new MsvcCompile(buildGraph, ccp);
             return cc;
         }
 
@@ -125,7 +125,7 @@ const char* c();
             var cc_c = CompileOne(buildGraph, "c.cpp");
             var cc_main = CompileOne(buildGraph, "main.cpp");
 
-            var linkerParams = new Msvc9LinkerParams();
+            var linkerParams = new MsvcLinkerParams();
             linkerParams.VcBinDir = vcBinDir;
             linkerParams.ToolChain = toolChain;
             linkerParams.CompileDir = compileDir;
@@ -135,7 +135,7 @@ const char* c();
             linkerParams.Inputs.Add(cc_c.Params.ObjectPath);
             linkerParams.Inputs.Add(cc_main.Params.ObjectPath);
             linkerParams.OutputFilePath = "main.exe";
-            var link = new Msvc9Link(buildGraph, linkerParams);
+            var link = new MsvcLink(buildGraph, linkerParams);
 
             var generateHeader = new GenerateHeader(
                 buildGraph, 

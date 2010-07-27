@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 
 using QRBuild.Translations;
-using QRBuild.Translations.ToolChain.Msvc9;
+using QRBuild.Translations.ToolChain.Msvc;
 using QRBuild.Translations.ToolChain.MsCsc;
 using QRBuild.Translations.IO;
 using QRBuild.IO;
@@ -123,19 +123,19 @@ ENDLOCAL
             File.WriteAllText(csc.BuildFileBaseName + "__qr__.deps", depsCache);
         }
 
-        static void TestMsvc9Compile()
+        static void TestMsvcCompile(string vcBinDir)
         {
-            var ccp = new Msvc9CompileParams();
-            ccp.VcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
-            ccp.ToolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            var ccp = new MsvcCompileParams();
+            ccp.VcBinDir = vcBinDir;
+            ccp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
             ccp.CompileDir = @"K:\work\code\cpp\0002_test";
             ccp.SourceFile = @"test02.cpp";
             ccp.Compile = true;
-            ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+            ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
 
             var buildGraph = new BuildGraph();
 
-            var cc = new Msvc9Compile(buildGraph, ccp);
+            var cc = new MsvcCompile(buildGraph, ccp);
             cc.Execute();
 
             cc.UpdateExplicitIO();
@@ -152,15 +152,15 @@ ENDLOCAL
         {
             var buildGraph = new BuildGraph();
 
-            var ccp = new Msvc9CompileParams();
+            var ccp = new MsvcCompileParams();
             ccp.VcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
-            ccp.ToolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            ccp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
             ccp.CompileDir = @"K:\work\code\cpp\0002_test";
             ccp.SourceFile = @"test02.cpp";
             ccp.Compile = true;
-            ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+            ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
 
-            var cc = new Msvc9Compile(buildGraph, ccp);
+            var cc = new MsvcCompile(buildGraph, ccp);
 
             BuildOptions buildOptions = new BuildOptions();
             buildOptions.ContinueOnError = false;
@@ -209,16 +209,16 @@ ENDLOCAL
         class CompileLink1
         {
             static string vcBinDir = @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
-            static Msvc9ToolChain toolChain = Msvc9ToolChain.ToolsX86TargetX86;
+            static MsvcToolChain toolChain = MsvcToolChain.ToolsX86TargetX86;
             static string compileDir = @"K:\work\code\C#\QRBuild\Tests\B";
             static string buildFileDir = @"K:\work\code\C#\QRBuild\Tests\B\built";
 
-            static Msvc9Compile CompileOne(BuildGraph buildGraph, string sourceFile)
+            static MsvcCompile CompileOne(BuildGraph buildGraph, string sourceFile)
             {
                 string sourceFileName = Path.GetFileName(sourceFile);
                 string objName = Path.Combine(buildFileDir, QRPath.ChangeExtension(sourceFileName, ".obj"));
 
-                var ccp = new Msvc9CompileParams();
+                var ccp = new MsvcCompileParams();
                 ccp.VcBinDir = vcBinDir;
                 ccp.ToolChain = toolChain;
                 ccp.CompileDir = compileDir;
@@ -226,10 +226,10 @@ ENDLOCAL
                 ccp.SourceFile = sourceFile;
                 ccp.ObjectPath = objName;
                 ccp.Compile = true;
-                ccp.DebugInfoFormat = Msvc9DebugInfoFormat.Normal;
+                ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
                 ccp.IncludeDirs.Add(@"K:\work\code\lib\boost_1_43_0");
-                ccp.CppExceptions = Msvc9CppExceptions.Enabled;
-                var cc = new Msvc9Compile(buildGraph, ccp);
+                ccp.CppExceptions = MsvcCppExceptions.Enabled;
+                var cc = new MsvcCompile(buildGraph, ccp);
                 return cc;
             }
 
@@ -249,7 +249,7 @@ ENDLOCAL
                 var cc_coo = CompileOne(buildGraph, "coo.cpp");
                 var cc_doo = CompileOne(buildGraph, "doo.cpp");
 
-                var linkerParams = new Msvc9LinkerParams();
+                var linkerParams = new MsvcLinkerParams();
                 linkerParams.VcBinDir = vcBinDir;
                 linkerParams.ToolChain = toolChain;
                 linkerParams.CompileDir = compileDir;
@@ -264,7 +264,7 @@ ENDLOCAL
                 linkerParams.Inputs.Add(cc_test02.Params.ObjectPath);
                 linkerParams.Inputs.Add(cc_yoo.Params.ObjectPath);
                 linkerParams.OutputFilePath = "result.exe";
-                var link = new Msvc9Link(buildGraph, linkerParams);
+                var link = new MsvcLink(buildGraph, linkerParams);
 
                 BuildOptions buildOptions = new BuildOptions();
                 buildOptions.ContinueOnError = false;
@@ -296,7 +296,7 @@ ENDLOCAL
 
             TestQRProcess();
 
-            TestMsvc9Compile();
+            TestMsvcCompile(@"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";);
 #endif
 
 #if false

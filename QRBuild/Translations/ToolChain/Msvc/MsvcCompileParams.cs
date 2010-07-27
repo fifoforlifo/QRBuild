@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
     /// 
-    public enum Msvc9ToolChain
+    public enum MsvcToolChain
     {
         /// x86-tools that generate x86 output
         ToolsX86TargetX86,
@@ -15,7 +15,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         ToolsAmd64TargetAmd64,
     }
 
-    public enum Msvc9ClrSupport
+    public enum MsvcClrSupport
     {
         None,
         Clr,
@@ -24,7 +24,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         ClrOldSyntax,
     }
 
-    public enum Msvc9AsmOutputFormat
+    public enum MsvcAsmOutputFormat
     {
         None,
         AsmOnly,
@@ -33,7 +33,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         WithMachineAndSourceCode,
     }
     
-    public enum Msvc9OptLevel
+    public enum MsvcOptLevel
     {
         Disabled,
         MinimizeSpace,
@@ -42,14 +42,14 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         GlobalOptimizations,
     }
 
-    public enum Msvc9SizeOrSpeed
+    public enum MsvcSizeOrSpeed
     {
         Neither,
         Size,
         Speed,
     }
     
-    public enum Msvc9InlineExpansion
+    public enum MsvcInlineExpansion
     {
         Default,
         Disabled,
@@ -57,7 +57,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         AutoInlining,
     }
 
-    public enum Msvc9CppExceptions
+    public enum MsvcCppExceptions
     {
         Disabled,
         /// /EHsc
@@ -66,7 +66,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         EnabledWithSeh,
     }
 
-    public enum Msvc9RuntimeChecks
+    public enum MsvcRuntimeChecks
     {
         Default,
         /// /RTCs
@@ -77,7 +77,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         StackFramesAndUninitializedVariables,
     }
 
-    public enum Msvc9RuntimeLibrary
+    public enum MsvcRuntimeLibrary
     {
         MultiThreaded,
         MultiThreadedDll,
@@ -85,21 +85,21 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         MultiThreadedDebugDll,
     }
 
-    public enum Msvc9EnhancedIsa
+    public enum MsvcEnhancedIsa
     {
         Default,
         SSE,
         SSE2,
     }
 
-    public enum Msvc9FloatingPointModel
+    public enum MsvcFloatingPointModel
     {
         Precise,
         Strict,
         Fast,
     }
 
-    public enum Msvc9DebugInfoFormat
+    public enum MsvcDebugInfoFormat
     {
         None,
         OldStyleC7,
@@ -108,9 +108,9 @@ namespace QRBuild.Translations.ToolChain.Msvc9
     }
 
     /// Parameters for compiling C/C++ source to object using MSVC.
-    public class Msvc9CompileParams
+    public class MsvcCompileParams
     {
-        public Msvc9CompileParams()
+        public MsvcCompileParams()
         {
         }
 
@@ -121,36 +121,36 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         /// 32-bit OS : %ProgramFiles%\Microsoft Visual Studio 9.0\VC\bin
         /// 64-bit OS : %ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin
         public string VcBinDir;
-        public Msvc9ToolChain ToolChain;
+        public MsvcToolChain ToolChain;
 
         //-- Input and Output Options
         public string SourceFile;
         public bool Compile;
         public string ObjectPath;
         public string PdbPath;
-        public Msvc9AsmOutputFormat AsmOutputFormat;
+        public MsvcAsmOutputFormat AsmOutputFormat;
         public string AsmOutputPath;
-        public Msvc9ClrSupport ClrSupport;
+        public MsvcClrSupport ClrSupport;
         public string ExtraArgs;
 
         //-- Optimization
-        public Msvc9OptLevel OptLevel;
-        public Msvc9InlineExpansion InlineExpansion;
+        public MsvcOptLevel OptLevel;
+        public MsvcInlineExpansion InlineExpansion;
         public bool EnableIntrinsicFunctions;
-        public Msvc9SizeOrSpeed FavorSizeOrSpeed;
+        public MsvcSizeOrSpeed FavorSizeOrSpeed;
         public bool OmitFramePointers;
 
         //-- Code Generation
         public bool EnableStringPooling;
-        public Msvc9CppExceptions CppExceptions;
+        public MsvcCppExceptions CppExceptions;
         public bool ExternCNoThrow;
-        public Msvc9RuntimeChecks BasicRuntimeChecks;
-        public Msvc9RuntimeLibrary RuntimeLibrary;
+        public MsvcRuntimeChecks BasicRuntimeChecks;
+        public MsvcRuntimeLibrary RuntimeLibrary;
         public int StructMemberAlignment = 8;
         public bool BufferSecurityCheck;
         public bool EnableFunctionLevelLinking;
-        public Msvc9EnhancedIsa EnhancedIsa;
-        public Msvc9FloatingPointModel FloatingPointModel = Msvc9FloatingPointModel.Precise;
+        public MsvcEnhancedIsa EnhancedIsa;
+        public MsvcFloatingPointModel FloatingPointModel = MsvcFloatingPointModel.Precise;
         public bool EnableFloatingPointExceptions;
         public bool HotPatchable;
 
@@ -172,7 +172,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         public bool IgnoreStandardPaths;
 
         //-- Language
-        public Msvc9DebugInfoFormat DebugInfoFormat;
+        public MsvcDebugInfoFormat DebugInfoFormat;
         public bool EnableExtensions = true;
         public bool DefaultCharUnsigned;
         public bool Wchar_tBuiltIn = true;

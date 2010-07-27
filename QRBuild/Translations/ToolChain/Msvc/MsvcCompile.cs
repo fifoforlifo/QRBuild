@@ -8,17 +8,17 @@ using QRBuild.IO;
 using QRBuild.Linq;
 using QRBuild.Translations;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
-    public sealed class Msvc9Compile : BuildTranslation
+    public sealed class MsvcCompile : BuildTranslation
     {
-        public Msvc9Compile(BuildGraph buildGraph, Msvc9CompileParams p)
+        public MsvcCompile(BuildGraph buildGraph, MsvcCompileParams p)
             : base(buildGraph)
         {
             m_params = p.Canonicalize();
         }
 
-        public Msvc9CompileParams Params
+        public MsvcCompileParams Params
         {
             get { return m_params; }
         }
@@ -31,7 +31,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
 
             string logFilePath = GetBuildLogFilePath();
 
-            string vcvarsBatchFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
+            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             if (!File.Exists(vcvarsBatchFilePath)) {
                 throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
             }
@@ -135,18 +135,18 @@ EXIT %ERRORLEVEL%
         {
             inputs.Add(m_params.SourceFile);
             // Add known toolchain binaries to the inputs.
-            string vcvarsFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
+            string vcvarsFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             inputs.Add(vcvarsFilePath);
-            if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetX86) {
+            if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetX86) {
                 string clPath = QRPath.GetCanonical(Path.Combine(m_params.VcBinDir, "cl.exe"));
                 inputs.Add(clPath);
             }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsX86TargetAmd64) {
+            else if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetAmd64) {
                 string clPath = QRPath.GetCanonical(
                     Path.Combine(Path.Combine(m_params.VcBinDir, "x86_amd64"), "cl.exe"));
                 inputs.Add(clPath);
             }
-            else if (m_params.ToolChain == Msvc9ToolChain.ToolsAmd64TargetAmd64) {
+            else if (m_params.ToolChain == MsvcToolChain.ToolsAmd64TargetAmd64) {
                 string clPath = QRPath.GetCanonical(
                     Path.Combine(Path.Combine(m_params.VcBinDir, "amd64"), "cl.exe"));
                 inputs.Add(clPath);
@@ -155,11 +155,11 @@ EXIT %ERRORLEVEL%
             // Outputs
             string objFilePath = QRPath.ComputeDefaultFilePath(m_params.ObjectPath, m_params.SourceFile, ".obj", m_params.CompileDir);
             outputs.Add(objFilePath);
-            if (m_params.DebugInfoFormat != Msvc9DebugInfoFormat.None) {
+            if (m_params.DebugInfoFormat != MsvcDebugInfoFormat.None) {
                 string pdbFilePath = QRPath.ComputeDefaultFilePath(m_params.PdbPath, m_params.SourceFile, ".pdb", m_params.CompileDir);
                 outputs.Add(pdbFilePath);
             }
-            if (m_params.AsmOutputFormat != Msvc9AsmOutputFormat.None) {
+            if (m_params.AsmOutputFormat != MsvcAsmOutputFormat.None) {
                 string asmFilePath = QRPath.ComputeDefaultFilePath(m_params.PdbPath, m_params.SourceFile, ".asm", m_params.CompileDir);
                 outputs.Add(asmFilePath);
             }
@@ -177,7 +177,7 @@ EXIT %ERRORLEVEL%
 
             string showIncludesFilePath = GetShowIncludesFilePath();
 
-            string vcvarsBatchFilePath = Msvc9Utility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
+            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
             if (!File.Exists(vcvarsBatchFilePath)) {
                 throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
             }
@@ -321,7 +321,7 @@ EXIT /B %ERRORLEVEL%
             return BuildFileBaseName + "__qr__._pp.d";
         }
 
-        private readonly Msvc9CompileParams m_params;
+        private readonly MsvcCompileParams m_params;
         private string m_buildFileBaseName;
     }
 }

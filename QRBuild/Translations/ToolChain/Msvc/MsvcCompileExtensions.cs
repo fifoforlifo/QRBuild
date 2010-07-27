@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using QRBuild.IO;
 
-namespace QRBuild.Translations.ToolChain.Msvc9
+namespace QRBuild.Translations.ToolChain.Msvc
 {
-    public static class Msvc9CompileExtensions
+    public static class MsvcCompileExtensions
     {
         /// Returns a new canonicalized instance of compiler params.
-        public static Msvc9CompileParams Canonicalize(this Msvc9CompileParams p)
+        public static MsvcCompileParams Canonicalize(this MsvcCompileParams p)
         {
-            Msvc9CompileParams o = new Msvc9CompileParams();
+            MsvcCompileParams o = new MsvcCompileParams();
             //-- Meta
             if (String.IsNullOrEmpty(p.VcBinDir)) {
                 throw new InvalidOperationException("VcBinDir not specified");
@@ -38,7 +38,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                 o.PdbPath = QRPath.ComputeDefaultFilePath(p.PdbPath, o.ObjectPath, ".pdb", o.CompileDir);
             }
             o.AsmOutputFormat = p.AsmOutputFormat;
-            if (p.AsmOutputFormat != Msvc9AsmOutputFormat.None) {
+            if (p.AsmOutputFormat != MsvcAsmOutputFormat.None) {
                 o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm", o.CompileDir);
             }
             o.ClrSupport = p.ClrSupport;
@@ -103,7 +103,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
         }
         
         /// This function assumes p is canonicalized.
-        public static string ToArgumentString(this Msvc9CompileParams p)
+        public static string ToArgumentString(this MsvcCompileParams p)
         {
             StringBuilder b = new StringBuilder();
             b.AppendFormat("\"{0}\" ", p.SourceFile);
@@ -119,16 +119,16 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             }
             switch (p.AsmOutputFormat)
             {
-                case Msvc9AsmOutputFormat.AsmOnly: 
+                case MsvcAsmOutputFormat.AsmOnly: 
                     b.Append("/FA ");
                     break;
-                case Msvc9AsmOutputFormat.WithMachineCode:
+                case MsvcAsmOutputFormat.WithMachineCode:
                     b.Append("/FAc ");
                     break;
-                case Msvc9AsmOutputFormat.WithSourceCode:
+                case MsvcAsmOutputFormat.WithSourceCode:
                     b.AppendFormat("/FAs ");
                     break;
-                case Msvc9AsmOutputFormat.WithMachineAndSourceCode:
+                case MsvcAsmOutputFormat.WithMachineAndSourceCode:
                     b.AppendFormat("/FAsc ");
                     break;
             }                
@@ -137,46 +137,46 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             }
             switch (p.ClrSupport)
             {
-                case Msvc9ClrSupport.Clr:
+                case MsvcClrSupport.Clr:
                     b.Append("/clr ");
                     break;
-                case Msvc9ClrSupport.ClrPure:
+                case MsvcClrSupport.ClrPure:
                     b.Append("/clr:pure ");
                     break;
-                case Msvc9ClrSupport.ClrSafe:
+                case MsvcClrSupport.ClrSafe:
                     b.Append("/clr:safe ");
                     break;
-                case Msvc9ClrSupport.ClrOldSyntax:
+                case MsvcClrSupport.ClrOldSyntax:
                     b.Append("/clr:oldsyntax ");
                     break;
             }
 
             //-- Optimization
             switch (p.OptLevel) {
-                case Msvc9OptLevel.Disabled:
+                case MsvcOptLevel.Disabled:
                     b.Append("/Od ");
                     break;
-                case Msvc9OptLevel.MinimizeSpace:
+                case MsvcOptLevel.MinimizeSpace:
                     b.Append("/O1 ");
                     break;
-                case Msvc9OptLevel.MaximizeSpeed:
+                case MsvcOptLevel.MaximizeSpeed:
                     b.Append("/O2 ");
                     break;
-                case Msvc9OptLevel.MaximumOptimizations:
+                case MsvcOptLevel.MaximumOptimizations:
                     b.Append("/Ox ");
                     break;
-                case Msvc9OptLevel.GlobalOptimizations:
+                case MsvcOptLevel.GlobalOptimizations:
                     b.Append("/Og ");
                     break;
             }
             switch (p.InlineExpansion) {
-                case Msvc9InlineExpansion.Disabled:
+                case MsvcInlineExpansion.Disabled:
                     b.Append("/Ob0 ");
                     break;
-                case Msvc9InlineExpansion.OnlyExplicit:
+                case MsvcInlineExpansion.OnlyExplicit:
                     b.Append("/Ob1 ");
                     break;
-                case Msvc9InlineExpansion.AutoInlining:
+                case MsvcInlineExpansion.AutoInlining:
                     b.Append("/Ob2 ");
                     break;
             }
@@ -184,10 +184,10 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                 b.Append("/Oi ");
             }
             switch (p.FavorSizeOrSpeed) {
-                case Msvc9SizeOrSpeed.Size:
+                case MsvcSizeOrSpeed.Size:
                     b.Append("/Os ");
                     break;
-                case Msvc9SizeOrSpeed.Speed:
+                case MsvcSizeOrSpeed.Speed:
                     b.Append("/Ot ");
                     break;
             }
@@ -199,7 +199,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             if (p.EnableStringPooling) {
                 b.Append("/GF ");
             }
-            if (p.CppExceptions == Msvc9CppExceptions.Enabled) {
+            if (p.CppExceptions == MsvcCppExceptions.Enabled) {
                 if (p.ExternCNoThrow) {
                     b.Append("/EHsc ");
                 }
@@ -207,31 +207,31 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                     b.Append("/EHs ");
                 }
             }
-            else if (p.CppExceptions == Msvc9CppExceptions.EnabledWithSeh) {
+            else if (p.CppExceptions == MsvcCppExceptions.EnabledWithSeh) {
                 b.Append("/EHa ");
             }
             switch (p.BasicRuntimeChecks) {
-                case Msvc9RuntimeChecks.StackFrames:
+                case MsvcRuntimeChecks.StackFrames:
                     b.Append("/RTCs ");
                     break;
-                case Msvc9RuntimeChecks.UninitializedVariables:
+                case MsvcRuntimeChecks.UninitializedVariables:
                     b.Append("/RTCu ");
                     break;
-                case Msvc9RuntimeChecks.StackFramesAndUninitializedVariables:
+                case MsvcRuntimeChecks.StackFramesAndUninitializedVariables:
                     b.Append("/RTCsu ");
                     break;
             }
             switch (p.RuntimeLibrary) {
-                case Msvc9RuntimeLibrary.MultiThreaded:
+                case MsvcRuntimeLibrary.MultiThreaded:
                     b.Append("/MT ");
                     break;
-                case Msvc9RuntimeLibrary.MultiThreadedDebug:
+                case MsvcRuntimeLibrary.MultiThreadedDebug:
                     b.Append("/MTd ");
                     break;
-                case Msvc9RuntimeLibrary.MultiThreadedDll:
+                case MsvcRuntimeLibrary.MultiThreadedDll:
                     b.Append("/MD ");
                     break;
-                case Msvc9RuntimeLibrary.MultiThreadedDebugDll:
+                case MsvcRuntimeLibrary.MultiThreadedDebugDll:
                     b.Append("/MDd ");
                     break;
             }
@@ -253,21 +253,21 @@ namespace QRBuild.Translations.ToolChain.Msvc9
                 b.Append("/Gy ");
             }
             switch (p.EnhancedIsa) {
-                case Msvc9EnhancedIsa.SSE:
+                case MsvcEnhancedIsa.SSE:
                     b.Append("/arch:SSE ");
                     break;
-                case Msvc9EnhancedIsa.SSE2:
+                case MsvcEnhancedIsa.SSE2:
                     b.Append("/arch:SSE2 ");
                     break;
             }
             switch (p.FloatingPointModel) {
-                case Msvc9FloatingPointModel.Precise:
+                case MsvcFloatingPointModel.Precise:
                     b.Append("/fp:precise ");
                     break;
-                case Msvc9FloatingPointModel.Strict:
+                case MsvcFloatingPointModel.Strict:
                     b.Append("/fp:strict ");
                     break;
-                case Msvc9FloatingPointModel.Fast:
+                case MsvcFloatingPointModel.Fast:
                     b.Append("/fp:fast ");
                     break;
             }
@@ -306,13 +306,13 @@ namespace QRBuild.Translations.ToolChain.Msvc9
 
             //-- Language
             switch (p.DebugInfoFormat) {
-                case Msvc9DebugInfoFormat.OldStyleC7:
+                case MsvcDebugInfoFormat.OldStyleC7:
                     b.Append("/Z7 ");
                     break;
-                case Msvc9DebugInfoFormat.Normal:
+                case MsvcDebugInfoFormat.Normal:
                     b.Append("/Zi ");
                     break;
-                case Msvc9DebugInfoFormat.EditAndContinue:
+                case MsvcDebugInfoFormat.EditAndContinue:
                     b.Append("/ZI ");
                     break;
             }
@@ -369,7 +369,7 @@ namespace QRBuild.Translations.ToolChain.Msvc9
             return b.ToString();
         }
 
-        public static string ToPreProcessorArgumentString(this Msvc9CompileParams p, bool showIncludes)
+        public static string ToPreProcessorArgumentString(this MsvcCompileParams p, bool showIncludes)
         {
             StringBuilder b = new StringBuilder();
             b.AppendFormat("{0} ", p.SourceFile);
