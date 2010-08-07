@@ -1,0 +1,192 @@
+﻿RBuild
+
+Overall Design Goals
+--------------------
+
+Layered build system.
+(1) Lowest layer is a strongly-typed build engine.
+(2) Scriptable project system.
+
+
+Vague Goals:
+-   DRY principle.
+-   Borrow good ideas and terminology where applicable.
+-   Support the concept of a "module" with build-time imports and exports.
+
+
+
+Build Engine Goals:
+A build engine is really just an API for setting up and executing builds.
+-   Strongly typed.
+-   Fully dependency-checked builds.
+-   Implicit dependency tracking, based on inputs and outputs.
+    -   Separate abstract concept of {inputs, outputs} from build-configuration.
+-   Allow explicit dependencies to be specified.
+    (but these should be generally unnecessary)
+-   Extensible.
+-   Scalable : Should handle large builds quickly.
+-   Logging
+    -   Trace build steps.
+    -   Control over logging and verbosity.
+    -   Define 'canonical' log format.
+    -   Provide good default implementation, but allow extensibility.
+-   Debug : Implementable via callbacks throughout the engine.
+    -   Conditional breakpoints -- for example, break when a certain node is reached.
+    -   "Stepper" capability.  It's possible to define Step In/Out/Over if
+        you are willing to serialize the build to various degrees.
+    -   Idea: VS integration.  If you set a BP on a Translation definition, 
+        it could Assert Before|After that Translation instance's specific Execute()
+        call, so that you
+
+
+Project System Goals:
+-   Scalable : Should support definition of "self-contained" projects.
+-   Succinct syntax.
+-   Locality
+-   Single-point-of-maintenance for everything (DRY principle)
+-   Nice to have:
+    -   Runtime data-model for efficiently changing settings and propagating notifications.
+
+
+Miscellaneous Goals:
+-   Easy to *correctly* force creation of directories.
+    Start from the innermost and work your way out; this matches the Security
+    model of file systems.
+-   Easy way to remove empty directory-hierarchy.
+
+
+
+Build Engine
+------------
+Concepts:
+-   Target : Generally speaking, an input or output of a build.
+    -   Target is actually a base class; specific types of targets have their own
+        behavior for existence, cleaning, and ability to detect modifications.    
+    -   ID'd by its derived Type + ID property.
+    -   Each Target instance is 1:1 with some underlying resource.
+        There may be some exceptions, like an 'ArtificalTarget' whose resource
+        is simply itself.    
+    -   Since each Target instance is 1:1 with a resource, each Target instance
+        is capable of holding instance state relevant to that resource.
+        This can be used to perform certain optimizations.
+    -   TODO: needs generic metadata capability -- but need requirements
+
+-   BuildContext : A container for Targets.  Base class for BuildGraph.
+    -   A central place to Add or Get an instance of a Target.
+        This allows build-scripts and Translation implementations to share the
+        same instances of Targets.
+    -   Note that a class-factory pattern here is cumbersome, because then
+        Targets either become slow, or they have to share a constructor parameter-list
+        (which is inflexible).  Forcing implementors to always Add Targets yields
+        the most flexible and performant result.
+        We can validate whether Targets were properly Added when Translation
+        inputs and outputs are iterated in a BuildGraph.
+
+-   Translation : A single build operation.
+    -   Capable of transforming inputs to outputs.
+    -   Capable of providing input and output lists for dependency checking.
+        This obviates the user from needing to specify this information explicitly,
+        and is one of the biggest design features of RBuild.
+    -   Capable of supplying a string containing all build parameters.
+        This makes it possible to detect that a build needs to occur when
+        parameters have changed.
+    -   Examples of Translation classes:
+        -   compile step
+        -   link step
+        -   file copy
+    -   Operates within a single BuildContext.
+
+-   BuildGraph : A dependency graph of Translations.
+    -   Operates within a single BuildContext.
+    -   Capable of building a set of specified Targets, by creating a
+        dependency graph and running a BuildProcess.
+    -   1:1 with BuildContext, because it is derived from it.
+
+-   BuildNode : A BuildGraph contains BuildNodes.
+    -   Each BuildNode is a wrapper around a Translation instance, and contains
+        the dependency information needed to do the build.
+
+-   DependencyCache : Each successful Translation execution results in one.
+    -   Contains inputs, outputs, and parameters for the most recent
+        Translation.  On subsequent Translations, these are compared to
+        determine whether outputs are up-to-date with respect to their
+        inputs [including Translation parameters].
+    -   TODO: needs to be high-performance
+        -   We *could* convert Input and Output lists into a canonical form, where
+            they are sorted by ID and formatted in a deterministic way.
+            Then it would only require a string-comparison to determine if
+            inputs or outputs have been modified.
+        -   We *could* stop using XML.
+    -   TODO: need a logical way of generating DepsCache filenames based on
+        Translation instances.  Having the user specify each one sucks.
+        Perhaps have each Tran
+
+-   TargetDecider : decides whether a Target has been modified.
+    -   TargetDeciderAttribute can be placed on implementations.
+        TargetPolicyManager.ScanAssembly() will find these, create an instance
+        of each attributed class, and cache it in a map.    
+
+-   BuildProcess : internal class that does parallel builds in dependency order
+
+
+Concerns:
+-   Targets are leaked *by design*.  This could get ugly.
+    Decision:   BuildGraph is ephemeral by design.
+                Really, all Targets and Translations' lifetimes are tied to
+                the BuildGraph's lifetime.  So the client is simply responsible
+                for not keep persistent BuildGraphs if they are worried about
+                leaking too much memory.
+                So long as it is "cheap" to create a new BuildGraph and compute
+                its dependencies, this will not be a problem.
+              
+                Also note that once a Translation has been added, it cannot be
+                removed.  The client must create a whole new BuildGraph.
+                And ATM it seems that making it possible to remove a Translation
+                would be too large a penalty anyways.
+                So the concern on leaking Targets is trumped by this even bigger 
+                issue that prevents us from keeping persistent BuildGraphs.
+    
+
+
+
+TODO List
+---------
+
+-   BuildContext and Target redesign.
+
+-   String interpolator requirements and design.
+
+-   Cancellation.  Anything special needed for Ctrl+C support?
+
+-   Extensible logging support, tracking logs per BuildNode.
+    -   Function to output the log for a single Target's dep-chain.
+
+-   Nagging concern : Lots of HashSets being allocated, arguably prematurely.
+    The code is really maintainable as-is, but does it create a huge memory overhead?
+    How much memory does an empty HashSet<> cost?
+
+-   Need option for controlling how output dependency-checks occur?
+    -   Right now it does a full version comparison on each output Target.
+    -   If a user wants to replace a particular outputed file and then 
+        do a build, the BuildProcess would immediately overwrite the user's file!
+        Possible Solutions:
+        -   [user burden] If user doesn't include the Translation that generates the particular
+            overwritten file, then it will be treated as a source.
+        -   [would require work] User can specify an output-dependency-check
+            policy that only verifies if outputs exist.  That would allow file
+            replacement without trigger a Build.
+            Overall this scenario seems like it invites error, BUT it can be useful
+            if it helps avoid the user waiting on a large build operation.
+        -   [user burden] Override patterns in user's projects.
+            For example, constructs like this would work:
+            if override file exists,
+                use it;
+            else 
+                specify new translation to generate the required file;
+           
+        I tend to think that well-factored projects would allow the user to
+        easily do manual file replacement, since typically such file replacement
+        is useful for resolving imports (like dependent libs) or for fixing
+        issues in generated source-files.
+        
+    

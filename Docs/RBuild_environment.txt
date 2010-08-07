@@ -1,0 +1,100 @@
+﻿RBuild Environment
+------------------
+
+Overall environment for build scripts should allow easily factored,
+hierarchical settings management.  Build settings should be strongly typed.
+
+
+Background
+----------
+Many build systems have the concept of an Environment that holds a
+set of key-value pairs.  Examples:
+-   scons uses a python Environment to store a bunch of 'globals' 
+    (global to that Environment), each with a magic name that some 
+    build action will consume.
+    A common idiom in scons is to use a template pattern : clone 
+    an Environment that has some 'defaults', then override them in
+    the cloned Environment.
+-   make allows string variables to be defined globally per Makefile;
+    when subordinate files are imported, a subset of the variables
+    may be exported to the subordinate file.
+    Thus, it is possible to establish multiple environments and share
+    settings between them.
+Of course, the above two descriptions describe an order-dependent
+construction environment.  This is powerful enough and maintainable
+enough to generate successful builds.
+
+
+Thought Experiment #1
+---------------------
+
+void SetupGlobalOptions(Environment env, string repoDir)
+{
+    //  Set up generic C++ compiler options.
+    CppCompilerOptions globalCppOptions = env.CreateOrGet<CppCompilerOptions>();
+    
+    string boostIncludePath = String.Format("{0}/boost-1.39/boost", repoDir);
+    globalCppOptions.IncludePaths.Add(boostIncludePath);
+    
+    //  Set up MSVC-specific options.
+    MsvcCompilerOptions msvcOptions = env.CreateOrGet<MsvcCompilerOptions>();
+    msvcOptions.Packing = 4;     
+}
+
+CppToObjectTranslation BuildSourceFile(
+    Environment env, 
+    BuildGraph graph,
+    string source)
+{
+    string object = ComputeObjectName(source);
+    var cppToObject =
+        new CppToObjectTranslation(graph, env)
+        {
+            Input = source,
+            Output = object,
+            DepsCacheFile = object + ".deps",
+        };
+    return cppToObject;    
+}
+
+DllTranslation MakeDll(
+    Environment env, 
+    BuildGraph graph,
+    string outFile,
+    params string[] objectFileNames)
+{
+    var dll =
+        new DllTranslation(graph, env)
+        {
+            Inputs = objectFileNames,
+            Output = outFile,
+        };
+    return dll;
+}
+
+string ConstructFoo(Environment env, BuildGraph graph)
+{
+    var at = BuildSourceFile(env, graph, "a.cpp");
+    var bt = BuildSourceFile(env, graph, "b.cpp");
+    var ct = BuildSourceFile(env, graph, "c.cpp");
+    var dt = BuildSourceFile(env, graph, "d.cpp");
+    var objectFileNames = ExtractOutputObjectFileNames(at, bt, ct, dt);
+    
+    string dllName = "Foo.dll";
+    var dll = MakeDll(env, graph, dllName, objectFileNames);
+    return dllName;
+}
+
+void main()
+{
+    Environment globalEnv = ...;
+    BuildGraph graph = ...;
+    
+    ConstructFoo(globalEnv, graph);
+}
+
+
+
+
+
+

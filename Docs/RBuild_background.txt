@@ -1,0 +1,185 @@
+﻿Background, Inspiration, and Anti-Patterns
+------------------------------------------
+
+These constitute abaliga's opinions in Mar. 2010.
+
+The Good sections are things to emulate.
+The OK sections are things that are livable, but not ideal.
+The Bad sections are the reasons why the RBuild project was started.
+
+
+-   XML in general
+    -   Good:
+        -   Human readable (kind of)
+        -   Universally understood.
+    -   OK:
+        -   Data formats are easy to make extensibile.
+            The code must be written to support it, but at least it's somewhat natural.
+        -   Decent library support.
+    -   Bad:
+        -   DRY Violation : open and close tags.  This is fine if a machine
+            is reading and writing, but definitely uncool for human data entry.
+        -   Performance.
+
+-   make
+    -   Good:
+        -   Does dependency checks based on inputs and outputs.
+        -   Declarative "rules", but imperative rule-graph construction.
+        -   Meta-rules using wildcards.
+    -   OK:
+        -   Scripting language is OK.  It supports functions and global vars.
+        -   Passing variables to a sub-make requires manually specifying an 'export' statement.
+            http://www.gnu.org/software/make/manual/html_node/Variables_002fRecursion.html#Variables_002fRecursion
+            
+            This is livable since variable definitions can be separated from the export declarations.
+    -   Bad:
+        -   DRY Violation : specify inputs and outputs explicitly, AND specify
+            the same information to the commandlines
+        -   Extra effort to handle implicit dependencies (like C headers).
+        -   tab character requirement
+        -   Recursive make -- no dependency checking across make processes.
+            This is basically an egregious user error (and NOT a valid argument against
+            using make).  Unfortunately it is a common user error.
+            http://miller.emu.id.au/pmiller/books/rmch/
+            
+-   SCons
+    -   Good:
+        -   True dependency-based build system.
+        -   Hosted in a real programming language (python).
+    -   OK:
+        -   All build rules ("constructors") use magically-named variables from the Environment.
+            As a build script author, this means you set a bunch of properties in an Environment,
+            and then call the constructor that creates the build nodes.
+            http://www.scons.org/doc/1.2.0/HTML/scons-user/x1392.html
+        -   Stock constructors all use really broad configuration parameters 
+            (like "CCFLAGS" for all compilation options).  This is no worse than make.
+    -   Bad:
+        -   Lack of good examples.
+        -   No stock functions to generate vcproj/csproj/etc. for code-browsing.
+
+-   Ant
+    -   Good:
+    -   OK:
+        -   Filters -- similar to piping on the commandline.
+    -   Bad: Covered in the MSBuild section; Ant/NAnt/MSBuild are all in the
+        same "family" of build systems.s
+
+-   MSBuild
+    -   Good:
+        -   MSBuild Transforms : http://msdn.microsoft.com/en-us/library/ms171476.aspx
+            It's a clever syntax for transforming a list into another list.
+            
+            Example:
+                <ItemGroup>
+                    <CppFile Include="a.cpp">
+                        <ObjFile>obj\a.obj</ObjFile>
+                    </CppFile>
+                    <CppFile Include="b.cpp">
+                        <ObjFile>obj\b.obj</ObjFile>
+                    </CppFile>
+                    <CppFile Include="c.cpp">
+                        <ObjFile>obj\c.obj</ObjFile>
+                    </CppFile>
+                </ItemGroup>                
+                <PropertyGroup>
+                    <!-- AllCppFiles="a.cpp";"b.cpp";"c.cpp" -->
+                    <AllCppFiles>@(CppFile)</AllCppFiles>
+                    <!-- AllObjFiles="a.obj";"b.obj";"c.obj" -->
+                    <AllObjFiles>@(CppFile -> '%(ObjFile)')</AllObjFiles>
+                </PropertyGroup>
+                
+            It allows calling a few built-in functions (really they are presented as
+            "well-known metadata" here: http://msdn.microsoft.com/en-us/library/ms164313.aspx).
+            
+            Ideally they would allow calling any function [in some extensible way],
+            and recursive macro resolution (does this work already??).
+        
+        -   Writing an MSBuild Task is easy.
+            And the properties of a Task class are directly settable in MSBuild Projects
+            without any special effort.
+            
+    -   OK:
+        -   Library of Tasks.
+        -   Incremental build can end up doing O(N^2) work, where N = # of MSBuild Targets.
+            This alone doesn't incur a huge performance penalty; however, this combined 
+    -   Bad:
+        -   Rote copy of the Ant model.
+        -   DRY Violation : Inputs and Outputs must be manually specified on
+            Target instances, AND the same information is repeated in the Task invocations.
+            Same problem as 'make'.
+        -   No built-in dependency checking based on inputs and outputs!        
+            Not sure why it's called a "Build" system.
+            Even when they're manually specified, they are only used to determine
+            up-to-dateness of the MSBuild Target in question.
+        -   MSBuild Task implementations must perform their own dependency checks.
+        -   DRY Violation: 
+            Project authors must manually sequence Targets to get dependency ordering
+            correct.  Despite defining inputs and outputs at the Target level AND
+            Tasks individually performing checks, it is still the user's responsibility
+            to sequence Targets using "DependsOnTarget" attributes.
+            
+            The common idiom of "Before$(TargetName)" properties mitigates this, at
+            the expense of additional DRY violation and maintainability.
+            
+        -   DRY Violation : XML project format
+        -   XML file format used *for imperative scripting*.
+            As a result, one of the most common tasks (building up path lists) 
+            is extremely cumbersome.  For example, you logically want to do this:
+                
+                IncludePaths = "c:\repo\lib1";
+                if (UsingBoost)
+                    IncludePaths += "c:\repo\boost\boost_1_39_0";
+                    
+            But you are forced to write this barely legible thing:
+            
+            <PropertyGroup>
+                <IncludePaths>c:\repo\lib1</IncludePaths>
+                <IncludePaths Condition="$(UsingBoost)">$(IncludePaths);c:\repo\boost\boost_1_39_0</IncludePaths>
+            </PropertyGroup>
+                        
+        -   Scripting language does not have functions.
+            This means you cannot, in general, cleanly process project properties.
+            Instead, lots of patterns are duplicated.
+            
+            In theory you could write MSBuild Tasks that generate Items, but that
+            is not quite the same (since a Task must be invoked from a Target), 
+            and is a much heavier hammer.
+            
+        -   Passing properties to a child MSBuild invocation requires manually
+            specifying key-value pairs in an attribute of the invocation.
+            Same essential problem as make.
+            
+        -   Parallel builds are horribly broken, and provably cannot be as
+            efficient as a true dependency-checked build.
+            
+            One major reason for this is the idiom where a single Target builds
+            all files of a certain type.
+            A Target instance is the minimum unit of execution (dependencies 
+            are only tracked through Target "DependsOnTarget" attributes).
+            
+            Example of a false hazard:
+            -   Consider a project containing 
+                -   foo.lex -> foo.c
+                -   a.c  (does not #include "foo.c")
+                -   b.c  (does not #include "foo.c")
+            -   The project will be defined as this:
+                -   Target "BuildLexFiles"  : 
+                        call Task that does foo.lex -> foo.c
+                -   Target "BuildAllCFiles" : DependsOnTargets="BuildLexFiles"
+                        call C compiler for foo.c, a.c, b.c                    
+            -   If a.c and foo.lex are dirtied, theoretically they should be
+                buildable in parallel.  However, they clearly cannot be
+                with the above idiomatic Target definitions.
+                
+            The problem could theoretically be worked around by defining a 
+            Target instance per .c file.  This would massively duplicate the
+            logic in the "BuildAllCFiles" Target.  Note that there is no way to
+            define a function to factor this out either.
+            
+            To factor out the logic, you can dynamically create Target instances --
+            but the only way to do this is via an MSBuild invocation of a separate project.
+            This means you would need a separate MSBuild project file that is capable
+            of building a single C file.  Then in the original project, hand type
+            a separate Target per .c file which does an MSBuild invocation for that file.
+
+            

@@ -123,6 +123,11 @@ an algorithm, the threading-model requirements for BuildNode are more difficult
             3.  If it's a current implicit output, the current implicit output should win.
                 Requires detection during build process, and dependencies must be *changed*.
 
+UPDATE: After experimenting with Implicit Outputs, my conclusion is that they are evil
+and must be avoided completely!  One major problem is that all translations that can
+produce an implicit output must be tested on EVERY BUILD.  This really defeats the purpose
+of having a fully dependency-checked build!
+
 
 
 Memory Concerns
