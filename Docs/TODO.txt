@@ -1,0 +1,32 @@
+-   Create a separate MsvcPreProcessTranslation.
+    -   Use the output of this to feed a 'pure' MsvcCompile.
+    -   Benchmark : pp+cc with intermediate files on disk, versus single cc invocation
+
+-   Helper functions for Windows SDK?
+
+-   GCC support
+
+-   Define a large multi-project test.  Write per-project build "scripts"
+    (really .csproj + *.cs) that deal with inter-project dependencies.
+-   Define the metaproject file format, to describe the build projects.
+
+-   Define the concept of ExtraInputs and ExtraOutputs to be distinct from
+    "ForcedOutputs".  Extra* will simply be used for dependency analysis, whereas
+    "Forced" should actually generate the named file.
+
+-   Add an option to BuildOptions to specify whether Clean should attempt to
+    remove all parent directories on every deleted file.
+    The end effect of the above is to remove all empty directories by the end
+    of a Clean.  (but without stating it as "remove empty directories, since there is
+    race-condition between checking and attempting to remove that makes checking moot).
+    -   Benchmark?  At least it will be opt-in.
+
+-   Name field for Translation instances.
+    -   Ability to filter builds by Translation name.  Filter would be a delegate.
+    -   Need to define a recommended naming scheme and filters (dotted syntax like Area.ProjectName.File).
+    -   Define standard filter functions.
+-   Translation metadata -- could be Dictionary<string, object>.  This would help
+    in defining a project format, or exporting to a foreign format (like MSBuild) for
+    the purpose of code-browsing.
+
+
