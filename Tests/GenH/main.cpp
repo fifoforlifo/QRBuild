@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "generated.h"
+#define GENERATED_HEADER_NAME "generated.h"
+#include GENERATED_HEADER_NAME
 
 int main(int argc, char** argv)
 {

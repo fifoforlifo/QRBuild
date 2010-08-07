@@ -115,27 +115,46 @@ const char* c();
             return cc;
         }
 
+        static MsvcLink LinkExecutable(
+            BuildGraph buildGraph,
+            string outputName,
+            params string[] objFiles)
+        {
+            var linkerParams = new MsvcLinkerParams();
+            linkerParams.VcBinDir = vcBinDir;
+            linkerParams.ToolChain = toolChain;
+            linkerParams.CompileDir = compileDir;
+            linkerParams.BuildFileDir = buildFileDir;
+            foreach (string objFile in objFiles) {
+                linkerParams.Inputs.Add(objFile);
+            }
+            linkerParams.OutputFilePath = outputName;
+            var link = new MsvcLink(buildGraph, linkerParams);
+            return link;
+        }
+
         public static void DoTest()
         {
             var buildGraph = new BuildGraph();
             Directory.CreateDirectory(buildFileDir);
+
+            string windowsSdkDir = @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
 
             var cc_a = CompileOne(buildGraph, "a.cpp");
             var cc_b = CompileOne(buildGraph, "b.cpp");
             var cc_c = CompileOne(buildGraph, "c.cpp");
             var cc_main = CompileOne(buildGraph, "main.cpp");
 
-            var linkerParams = new MsvcLinkerParams();
-            linkerParams.VcBinDir = vcBinDir;
-            linkerParams.ToolChain = toolChain;
-            linkerParams.CompileDir = compileDir;
-            linkerParams.BuildFileDir = buildFileDir;
-            linkerParams.Inputs.Add(cc_a.Params.ObjectPath);
-            linkerParams.Inputs.Add(cc_b.Params.ObjectPath);
-            linkerParams.Inputs.Add(cc_c.Params.ObjectPath);
-            linkerParams.Inputs.Add(cc_main.Params.ObjectPath);
-            linkerParams.OutputFilePath = "main.exe";
-            var link = new MsvcLink(buildGraph, linkerParams);
+            string kernel32Lib = Path.Combine(windowsSdkDir, @"Lib\kernel32.lib");
+            // NOTE: linker order matters; the linker translation respects that
+            var link = LinkExecutable(
+                buildGraph, 
+                "main.exe",
+                cc_a.Params.ObjectPath,
+                cc_b.Params.ObjectPath,
+                cc_c.Params.ObjectPath,
+                cc_main.Params.ObjectPath,
+                kernel32Lib);
 
             var generateHeader = new GenerateHeader(
                 buildGraph, 

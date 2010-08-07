@@ -31,11 +31,6 @@ namespace QRBuild.Translations.ToolChain.Msvc
 
             string logFilePath = GetBuildLogFilePath();
 
-            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
-            if (!File.Exists(vcvarsBatchFilePath)) {
-                throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
-            }
-
             string batchFilePath = GetBatchFilePath();
             string batchFile = String.Format(@"
 @echo off
@@ -48,11 +43,14 @@ IF _%1 == _ (
 @echo {2}
 SETLOCAL
 
-call ""{3}"" {4}
+rem Adding quotes to the PATH variable causes DLL search to fail.
+SET PATH={3};{3}\..\..\Common7\IDE;%PATH%
+SET INCLUDE={3}\..\Include;%INCLUDE%
+SET LIB={3}\..\Lib;%LIB%
 
-cd ""{5}""
+cd ""{4}""
 
-link @""{6}""
+link @""{5}""
 
 :END
 EXIT %ERRORLEVEL%
@@ -60,8 +58,7 @@ EXIT %ERRORLEVEL%
                 batchFilePath,
                 logFilePath,
                 "off" /* TODO: logging verbosity could control this */,
-                vcvarsBatchFilePath,
-                "> NUL" /* TODO: control whether vcvars messages are logged with a property */,
+                m_params.VcBinDir,
                 m_params.CompileDir,
                 responseFilePath);
 
@@ -124,8 +121,6 @@ EXIT %ERRORLEVEL%
             // DefaultLib and NoDefaultLib are not tracked.
 
             // Add known toolchain binaries to the inputs.
-            string vcvarsFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
-            inputs.Add(vcvarsFilePath);
             if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetX86) {
                 string clPath = QRPath.GetCanonical(Path.Combine(m_params.VcBinDir, "link.exe"));
                 inputs.Add(clPath);

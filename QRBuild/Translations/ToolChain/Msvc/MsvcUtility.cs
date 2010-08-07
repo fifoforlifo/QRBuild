@@ -4,6 +4,9 @@ namespace QRBuild.Translations.ToolChain.Msvc
 {
     public static class MsvcUtility
     {
+        /// Returns a path to the specified toolChain's vcvars32.bat file.
+        /// This exists as a general utility, but none of the Msvc* Translation classes
+        /// rely on it anymore.
         public static string GetVcVarsBatchFilePath(MsvcToolChain toolChain, string vcBinDir)
         {
             if (toolChain == MsvcToolChain.ToolsX86TargetX86) {
@@ -22,7 +25,5 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             return null;
         }
-
-
     }
 }

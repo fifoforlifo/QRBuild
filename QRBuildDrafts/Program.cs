@@ -23,6 +23,8 @@ namespace QRBuild
             Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
             Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
             Console.WriteLine("BuildResults.UpdateImplicitInputsCount = {0}", buildResults.UpdateImplicitInputsCount);
+            TimeSpan executionTime = buildResults.ExecuteEndTime - buildResults.ExecuteStartTime;
+            Console.WriteLine("# ExecutionTime = {0}", executionTime);
         }
     }
     
@@ -288,7 +290,8 @@ ENDLOCAL
 
         static void Main(string[] args)
         {
-
+            DateTime startTime = DateTime.Now;
+            
 #if false
             TestCscCompile();
 
@@ -313,10 +316,15 @@ ENDLOCAL
             }
 #endif
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 GeneratedHeaderTest.DoTest();
             }
 
+            DateTime endTime = DateTime.Now;
+            TimeSpan timeSpan = endTime - startTime;
+
+            Console.WriteLine("TotalTestTime = {0}", timeSpan);
+            
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
         }

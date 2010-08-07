@@ -31,11 +31,6 @@ namespace QRBuild.Translations.ToolChain.Msvc
 
             string logFilePath = GetBuildLogFilePath();
 
-            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
-            if (!File.Exists(vcvarsBatchFilePath)) {
-                throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
-            }
-
             string batchFilePath = GetBatchFilePath();
             string batchFile = String.Format(@"
 @echo off
@@ -48,11 +43,14 @@ IF _%1 == _ (
 @echo {2}
 SETLOCAL
 
-call ""{3}"" {4}
+rem Adding quotes to the PATH variable causes DLL search to fail.
+SET PATH={3};{3}\..\..\Common7\IDE;%PATH%
+SET INCLUDE={3}\..\Include;%INCLUDE%
+SET LIB={3}\..\Lib;%LIB%
 
-cd ""{5}""
+cd ""{4}""
 
-cl @""{6}""
+cl @""{5}""
 
 :END
 EXIT %ERRORLEVEL%
@@ -60,8 +58,7 @@ EXIT %ERRORLEVEL%
                 batchFilePath,
                 logFilePath,
                 "off" /* TODO: logging verbosity could control this */,
-                vcvarsBatchFilePath,
-                "> NUL" /* TODO: control whether vcvars messages are logged with a property */,
+                m_params.VcBinDir,
                 m_params.CompileDir,
                 responseFilePath);
 
@@ -135,8 +132,6 @@ EXIT %ERRORLEVEL%
         {
             inputs.Add(m_params.SourceFile);
             // Add known toolchain binaries to the inputs.
-            string vcvarsFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
-            inputs.Add(vcvarsFilePath);
             if (m_params.ToolChain == MsvcToolChain.ToolsX86TargetX86) {
                 string clPath = QRPath.GetCanonical(Path.Combine(m_params.VcBinDir, "cl.exe"));
                 inputs.Add(clPath);
@@ -177,11 +172,6 @@ EXIT %ERRORLEVEL%
 
             string showIncludesFilePath = GetShowIncludesFilePath();
 
-            string vcvarsBatchFilePath = MsvcUtility.GetVcVarsBatchFilePath(m_params.ToolChain, m_params.VcBinDir);
-            if (!File.Exists(vcvarsBatchFilePath)) {
-                throw new InvalidOperationException(String.Format("vcvars batch file not found here : {0}", vcvarsBatchFilePath));
-            }
-
             string preProcessedFilePath = GetPreProcessedFilePath();
 
             string batchFilePath = GetPpBatchFilePath();
@@ -189,16 +179,18 @@ EXIT %ERRORLEVEL%
 @echo off
 SETLOCAL
 
-call ""{0}"" {1}
+rem Adding quotes to the PATH variable causes DLL search to fail.
+SET PATH={0};{0}\..\..\Common7\IDE;%PATH%
+SET INCLUDE={0}\..\Include;%INCLUDE%
+SET LIB={0}\..\Lib;%LIB%
 
-cd ""{2}""
+cd ""{1}""
 
-cl @""{3}"" 1> ""{4}"" 2> ""{5}""
+cl @""{2}"" 1> ""{3}"" 2> ""{4}""
 
 EXIT /B %ERRORLEVEL%
 ",
-                vcvarsBatchFilePath,
-                "> NUL" /* TODO: control whether vcvars messages are logged with a property */,
+                m_params.VcBinDir,
                 m_params.CompileDir,
                 responseFilePath,
                 preProcessedFilePath,
@@ -213,6 +205,10 @@ EXIT /B %ERRORLEVEL%
             }
 
             // Parse the output for includes and error messages.
+            // NOTE: This algorithm is imperfect, because the "NOTE: including file:" messages do not distinguish
+            // between quoted-form versus angle-bracket-form includes.  Since the rules on header search are
+            // different between the two, there is always a chance that we will guess a wrong generated file is
+            // a dependency of this translation.
             bool success = true;
             string showIncludesFileContents = File.ReadAllText(showIncludesFilePath);
             using (StringReader sr = new StringReader(showIncludesFileContents)) {
@@ -265,6 +261,8 @@ EXIT /B %ERRORLEVEL%
             return success;
         }
 
+        // TODO: still needs work.  The full algorithm to emulate is here:
+        // http://msdn.microsoft.com/en-us/library/36k2cdd4.aspx
         private string SearchIncludePathsForGeneratedFile(string path)
         {
             if (Path.IsPathRooted(path)) {
