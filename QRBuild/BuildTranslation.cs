@@ -100,11 +100,6 @@ namespace QRBuild
 
         /// Translation returns true if it's possible to have implicit inputs.
         public abstract bool RequiresImplicitInputs { get; }
-        
-        /// Translation returns true if it's possible to generate implicit outputs.
-        /// Implicit outputs are expensive to process, so avoiding this feature
-        /// can result in faster builds.
-        public abstract bool GeneratesImplicitOutputs { get; }
 
 
         //-- Internal interface

@@ -280,8 +280,6 @@ namespace QRBuild
 
         /// Executes the Translation associated with buildNode, if all dependencies
         /// are up-to-date.  This includes explicit and implicit IOs.
-        /// This function does not access BuildNode.Dependencies or BuildNode.Consumers,
-        /// so locking m_buildNodesMutex is not necessary here.
         private BuildStatus ExecuteOneBuildNode(BuildNode buildNode)
         {
             //  depsCache file opened for exclusive access here.  
@@ -322,7 +320,10 @@ namespace QRBuild
                         }
 
                         //  Since all explicit inputs exist, we can update the implicit IOs.
-                        buildNode.Translation.UpdateImplicitInputs();
+                        bool updateImplicitInputsSucceeded = buildNode.Translation.UpdateImplicitInputs();
+                        if (!updateImplicitInputsSucceeded) {
+                            return BuildStatus.ExecuteFailed;
+                        }
                         return BuildStatus.ImplicitInputsComputed;
                     }
                     else { // buildNode.ImplicitInputsUpToDate

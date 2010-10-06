@@ -26,6 +26,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
                 : QRPath.GetCanonical(p.BuildFileDir);
             o.VcBinDir = QRPath.GetAbsolutePath(p.VcBinDir, o.CompileDir);
             o.ToolChain = p.ToolChain;
+            o.CheckForImplicitIO = p.CheckForImplicitIO;
 
             //-- Input and Output Options
             if (String.IsNullOrEmpty(p.SourceFile)) {

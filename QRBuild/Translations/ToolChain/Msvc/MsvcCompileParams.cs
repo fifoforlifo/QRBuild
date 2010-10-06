@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace QRBuild.Translations.ToolChain.Msvc
 {
-    /// 
+    /// Selects the processor architecture of the toolchain.
     public enum MsvcToolChain
     {
         /// x86-tools that generate x86 output
@@ -122,6 +122,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
         /// 64-bit OS : %ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\bin
         public string VcBinDir;
         public MsvcToolChain ToolChain;
+        /// If true, check for implicit inputs by preprocessing.
+        public bool CheckForImplicitIO = true;
 
         //-- Input and Output Options
         public string SourceFile;

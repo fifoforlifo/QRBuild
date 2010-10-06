@@ -73,6 +73,9 @@
     <Compile Include="Translations\ToolChain\Msvc\MsvcLink.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerExtensions.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerParams.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcPreProcess.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcPreProcessExtensions.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcPreProcessParams.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcUtility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

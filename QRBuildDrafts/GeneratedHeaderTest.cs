@@ -68,10 +68,6 @@ const char* c();
         {
             get { return false; }
         }
-        public override bool GeneratesImplicitOutputs
-        {
-            get { return false; }
-        }
 
         protected override void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs)
         {
@@ -140,9 +136,9 @@ const char* c();
 
             string windowsSdkDir = @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
 
-            var cc_a = CompileOne(buildGraph, "a.cpp");
-            var cc_b = CompileOne(buildGraph, "b.cpp");
-            var cc_c = CompileOne(buildGraph, "c.cpp");
+            var cc_a    = CompileOne(buildGraph, "a.cpp");
+            var cc_b    = CompileOne(buildGraph, "b.cpp");
+            var cc_c    = CompileOne(buildGraph, "c.cpp");
             var cc_main = CompileOne(buildGraph, "main.cpp");
 
             string kernel32Lib = Path.Combine(windowsSdkDir, @"Lib\kernel32.lib");
@@ -166,6 +162,86 @@ const char* c();
             buildOptions.ContinueOnError = false;
             buildOptions.FileDecider = new FileSizeDateDecider();
             buildOptions.MaxConcurrency = 6;
+
+            string[] targets = { link.Params.OutputFilePath };
+
+            BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+            TestHelpers.PrintBuildResults(cleanBuildResults);
+            BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
+            TestHelpers.PrintBuildResults(incrementalBuildResults);
+
+            bool doClean = true;
+            if (doClean) {
+                BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
+                TestHelpers.PrintBuildResults(cleanResults);
+            }
+        }
+
+        static MsvcCompile PpAndCompileOne(BuildGraph buildGraph, string sourceFile)
+        {
+            string sourceFileName = Path.GetFileName(sourceFile);
+
+            string iName = Path.Combine(buildFileDir, QRPath.ChangeExtension(sourceFileName, ".i"));
+            var ppp = new MsvcPreProcessParams();
+            ppp.VcBinDir = vcBinDir;
+            ppp.ToolChain = toolChain;
+            ppp.CompileDir = compileDir;
+            ppp.BuildFileDir = buildFileDir;
+            ppp.SourceFile = sourceFile;
+            ppp.OutputPath = iName;
+            ppp.IncludeDirs.Add(@"K:\work\code\lib\boost_1_43_0");
+            var pp = new MsvcPreProcess(buildGraph, ppp);
+
+            string objName = Path.Combine(buildFileDir, QRPath.ChangeExtension(sourceFileName, ".obj"));
+            var ccp = new MsvcCompileParams();
+            ccp.VcBinDir = vcBinDir;
+            ccp.ToolChain = toolChain;
+            ccp.CompileDir = compileDir;
+            ccp.BuildFileDir = buildFileDir;
+            ccp.CheckForImplicitIO = false;
+            ccp.SourceFile = iName;
+            ccp.ObjectPath = objName;
+            ccp.Compile = true;
+            ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
+            ccp.CppExceptions = MsvcCppExceptions.Enabled;
+            ccp.CompileAsCpp = true;
+            var cc = new MsvcCompile(buildGraph, ccp);
+            return cc;
+        }
+
+        public static void DoTest2()
+        {
+            var buildGraph = new BuildGraph();
+            Directory.CreateDirectory(buildFileDir);
+
+            string windowsSdkDir = @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
+
+            var cc_a    = PpAndCompileOne(buildGraph, "a.cpp");
+            var cc_b    = PpAndCompileOne(buildGraph, "b.cpp");
+            var cc_c    = PpAndCompileOne(buildGraph, "c.cpp");
+            var cc_main = PpAndCompileOne(buildGraph, "main.cpp");
+
+            string kernel32Lib = Path.Combine(windowsSdkDir, @"Lib\kernel32.lib");
+            // NOTE: linker order matters; the linker translation respects that
+            var link = LinkExecutable(
+                buildGraph,
+                "main.exe",
+                cc_a.Params.ObjectPath,
+                cc_b.Params.ObjectPath,
+                cc_c.Params.ObjectPath,
+                cc_main.Params.ObjectPath,
+                kernel32Lib);
+
+            var generateHeader = new GenerateHeader(
+                buildGraph,
+                "generated.h",
+                compileDir,
+                buildFileDir);
+
+            BuildOptions buildOptions = new BuildOptions();
+            buildOptions.ContinueOnError = false;
+            buildOptions.FileDecider = new FileSizeDateDecider();
+            buildOptions.MaxConcurrency = 4;
 
             string[] targets = { link.Params.OutputFilePath };
 

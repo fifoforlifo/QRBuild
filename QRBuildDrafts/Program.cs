@@ -290,8 +290,6 @@ ENDLOCAL
 
         static void Main(string[] args)
         {
-            DateTime startTime = DateTime.Now;
-            
 #if false
             TestCscCompile();
 
@@ -316,17 +314,35 @@ ENDLOCAL
             }
 #endif
 
-            for (int i = 0; i < 10; i++) {
+            const int numIterations = 10;
+
+            DateTime startTime = DateTime.Now;
+            for (int i = 0; i < numIterations; i++) {
                 GeneratedHeaderTest.DoTest();
             }
-
             DateTime endTime = DateTime.Now;
             TimeSpan timeSpan = endTime - startTime;
+            Console.WriteLine("TotalTestTime = {0}, AvgIterationTime = {1}",
+                timeSpan,
+                TimeSpan.FromTicks(timeSpan.Ticks / numIterations));
 
-            Console.WriteLine("TotalTestTime = {0}", timeSpan);
+            Console.WriteLine(">> Press a key");
+            Console.ReadKey();
+
+#if false
+            startTime = DateTime.Now;
+            for (int i = 0; i < numIterations; i++) {
+                GeneratedHeaderTest.DoTest2();
+            }
+            endTime = DateTime.Now;
+            timeSpan = endTime - startTime;
+            Console.WriteLine("TotalTestTime = {0}, AvgIterationTime = {1}",
+                timeSpan,
+                TimeSpan.FromTicks(timeSpan.Ticks / numIterations));
             
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
+#endif
         }
     }
 }

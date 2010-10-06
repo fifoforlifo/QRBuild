@@ -97,10 +97,6 @@ EXIT %ERRORLEVEL%
         {
             get { return false; }
         }
-        public override bool GeneratesImplicitOutputs
-        {
-            get { return false; }
-        }
 
         protected override void ComputeExplicitIO(HashSet<string> inputs, HashSet<string> outputs)
         {
