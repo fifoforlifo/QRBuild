@@ -15,7 +15,7 @@ namespace QRBuild
 {
     public class TestHelpers
     {
-        public static void PrintBuildResults(BuildResults buildResults)
+        public static void PrintBuildResults(BuildOptions options, BuildResults buildResults)
         {
             Console.WriteLine("===================================================");
             Console.WriteLine("BuildResults.Action                = {0}", buildResults.Action);
@@ -23,6 +23,7 @@ namespace QRBuild
             Console.WriteLine("BuildResults.TranslationCount      = {0}", buildResults.TranslationCount);
             Console.WriteLine("BuildResults.UpToDateCount         = {0}", buildResults.UpToDateCount);
             Console.WriteLine("BuildResults.UpdateImplicitInputsCount = {0}", buildResults.UpdateImplicitInputsCount);
+            Console.WriteLine("BuildOptions.FileDecider.FStatCount= {0}", options.FileDecider.FStatCount);
             TimeSpan executionTime = buildResults.ExecuteEndTime - buildResults.ExecuteStartTime;
             Console.WriteLine("# ExecutionTime = {0}", executionTime);
         }
@@ -276,14 +277,14 @@ ENDLOCAL
                 string[] targets = { link.Params.OutputFilePath };
 
                 BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-                TestHelpers.PrintBuildResults(cleanBuildResults);
+                TestHelpers.PrintBuildResults(buildOptions, cleanBuildResults);
                 BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-                TestHelpers.PrintBuildResults(incrementalBuildResults);
+                TestHelpers.PrintBuildResults(buildOptions, incrementalBuildResults);
 
                 bool doClean = true;
                 if (doClean) {
                     BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
-                    TestHelpers.PrintBuildResults(cleanResults);
+                    TestHelpers.PrintBuildResults(buildOptions, cleanResults);
                 }
             }
         }
@@ -314,8 +315,9 @@ ENDLOCAL
             }
 #endif
 
-            const int numIterations = 10;
+            const int numIterations = 20;
 
+#if true
             DateTime startTime = DateTime.Now;
             for (int i = 0; i < numIterations; i++) {
                 GeneratedHeaderTest.DoTest();
@@ -328,6 +330,7 @@ ENDLOCAL
 
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
+#endif
 
 #if false
             startTime = DateTime.Now;

@@ -4,12 +4,16 @@ namespace QRBuild
 {
     /// Implementors of this interface decide how file state is represented in DepsCaches.
     /// They are used during the build to determine whether nodes are up-to-date.
+    /// Implementors must be threadsafe and preferably state-free.
+    /// Statistics gathering state is permissible.
     public interface IFileDecider
     {
         /// Returns a version stamp for a file.
         /// This could include information such as 
         /// file-date, file-size, and even an MD5-hash of the contents.
         string GetVersionStamp(string filePath);
+
+        long FStatCount { get; }
     }
 
     public static class FileDecider

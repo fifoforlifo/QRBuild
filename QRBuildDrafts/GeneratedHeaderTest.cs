@@ -166,14 +166,14 @@ const char* c();
             string[] targets = { link.Params.OutputFilePath };
 
             BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-            TestHelpers.PrintBuildResults(cleanBuildResults);
+            TestHelpers.PrintBuildResults(buildOptions, cleanBuildResults);
             BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-            TestHelpers.PrintBuildResults(incrementalBuildResults);
+            TestHelpers.PrintBuildResults(buildOptions, incrementalBuildResults);
 
             bool doClean = true;
             if (doClean) {
                 BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
-                TestHelpers.PrintBuildResults(cleanResults);
+                TestHelpers.PrintBuildResults(buildOptions, cleanResults);
             }
         }
 
@@ -246,14 +246,14 @@ const char* c();
             string[] targets = { link.Params.OutputFilePath };
 
             BuildResults cleanBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-            TestHelpers.PrintBuildResults(cleanBuildResults);
+            TestHelpers.PrintBuildResults(buildOptions, cleanBuildResults);
             BuildResults incrementalBuildResults = buildGraph.Execute(BuildAction.Build, buildOptions, targets, true);
-            TestHelpers.PrintBuildResults(incrementalBuildResults);
+            TestHelpers.PrintBuildResults(buildOptions, incrementalBuildResults);
 
             bool doClean = true;
             if (doClean) {
                 BuildResults cleanResults = buildGraph.Execute(BuildAction.Clean, buildOptions, targets, true);
-                TestHelpers.PrintBuildResults(cleanResults);
+                TestHelpers.PrintBuildResults(buildOptions, cleanResults);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 
 namespace QRBuild
 {
@@ -9,6 +10,8 @@ namespace QRBuild
 
         public string GetVersionStamp(string filePath)
         {
+            AtomicIncrementFStatCount();
+
             FileInfo fileInfo = new FileInfo(filePath);
             if (!fileInfo.Exists) {
                 return NonExistent;
@@ -20,5 +23,21 @@ namespace QRBuild
                 fileInfo.LastWriteTimeUtc.Ticks);
             return stamp;
         }
+
+        public long FStatCount
+        {
+            get
+            {
+                long result = Interlocked.Add(ref m_fstatCount, 0);
+                return result;
+            }
+        }
+
+        private void AtomicIncrementFStatCount()
+        {
+            Interlocked.Increment(ref m_fstatCount);
+        }
+
+        private long m_fstatCount;
     }
 }
