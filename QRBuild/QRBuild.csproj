@@ -6,12 +6,14 @@
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8449AAC7-39A7-419A-B470-9DC457360947}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>QRBuild</RootNamespace>
-    <AssemblyName>QRBuild</AssemblyName>
+    <AssemblyName>QR</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +48,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\QRFile.cs" />
+    <Compile Include="ProjectSystem\BuildVariant.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
+    <Compile Include="ProjectSystem\Project.cs" />
+    <Compile Include="ProjectSystem\ProjectLoader.cs" />
+    <Compile Include="ProjectSystem\ProjectManager.cs" />
+    <Compile Include="ProjectSystem\QRProjectAttribute.cs" />
+    <Compile Include="ProjectSystem\Target.cs" />
+    <Compile Include="ProjectSystem\VariantPartAttribute.cs" />
+    <Compile Include="QRBuild.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompile.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompileExtensions.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompileParams.cs" />

@@ -20,7 +20,7 @@ namespace QRBuild.IO
         /// Write all text to the fileStream without closing it.
         public static void WriteAllText(FileStream fileStream, string text)
         {
-            // We do NOT dispose of the StreamReader, since that would
+            // We do NOT dispose of the StreamWriter, since that would
             // call fileStream.Close().
             StreamWriter sw = new StreamWriter(fileStream, Encoding.UTF8);
             sw.BaseStream.Seek(0, SeekOrigin.Begin);

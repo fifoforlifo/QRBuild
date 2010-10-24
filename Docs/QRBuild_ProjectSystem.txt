@@ -1,0 +1,28 @@
+Goals:
+-   Allow simple command-line build of a module.
+-   Make it easy to define simple projects.
+-   Make inter-project dependencies easy.
+-   Allow user definition of the build variant.
+-   Allow projects to support custom commands.
+-   Provide full help.
+-   Everything should be strongly typed.
+-   Enable easy definition of a bootstrap pattern.
+
+
+Implementation Ideas:
+-   BuildVariant should be user-defined and strongly typed.
+    -   May require dynamic method generation to invoke a user's
+        method that takes their specific type as a parameter.
+    -   Alternatively, could use source-generation tricks.
+        This is less desirable from the standpoint of usability from
+        any project implementation.
+-   Concept of a "variant string", which is a user-friendly
+    serialized form of a BuildVariant.
+    -   Each field of a BuildVariant has an ordinal position.
+    -   Variant string contains the variant's values, delimited by dots.
+    -   Example: x86.debug, x64.release, develop.x86.gcc
+    -   Can use reflection to have a generic handling of this.
+-   Each project should only be instanced once per variant, so that
+    the same translation's are not repeatedly added to the BuildGraph.
+
+

@@ -11,6 +11,8 @@ using QRBuild.Translations.ToolChain.MsCsc;
 using QRBuild.Translations.IO;
 using QRBuild.IO;
 
+using QRBuild.ProjectSystem;
+
 namespace QRBuild
 {
     public class TestHelpers
@@ -289,6 +291,46 @@ ENDLOCAL
             }
         }
 
+        public enum Configuration
+        {
+            Debug,
+            Develop,
+            Release,
+        }
+        public enum Platform
+        {
+            Win32,
+            x64,
+        }
+
+        public class Variant : BuildVariant
+        {
+            [VariantPart(100)]
+            public Configuration Configuration;
+
+            [VariantPart(200)]
+            public Platform Platform;
+
+            [VariantPart(300)]
+            public string IsDebacle = "YesItIs";
+        }
+
+        static void TestBuildVariant()
+        {
+            Variant v = new Variant();
+            string format = v.GetVariantStringFormat();
+            Console.WriteLine("VariantStringFormat  = {0}", format);
+            string value = v.ToString();
+            Console.WriteLine("VariantString        = {0}", value);
+            string options = v.GetVariantStringOptions();
+            Console.WriteLine("VariantStringOptions = \n{0}", options);
+
+            Variant v2 = new Variant();
+            v2.FromString("Develop.x64.NopeNotThisTime");
+            Console.WriteLine("FromString,ToString  = {0}", v2.ToString());
+        }
+
+
         static void Main(string[] args)
         {
 #if false
@@ -317,7 +359,7 @@ ENDLOCAL
 
             const int numIterations = 20;
 
-#if true
+#if false
             DateTime startTime = DateTime.Now;
             for (int i = 0; i < numIterations; i++) {
                 GeneratedHeaderTest.DoTest();
@@ -346,6 +388,8 @@ ENDLOCAL
             Console.WriteLine(">> Press a key");
             Console.ReadKey();
 #endif
+
+            TestBuildVariant();
         }
     }
 }
