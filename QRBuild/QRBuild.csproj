@@ -49,6 +49,8 @@
   <ItemGroup>
     <Compile Include="IO\QRFile.cs" />
     <Compile Include="ProjectSystem\BuildVariant.cs" />
+    <Compile Include="ProjectSystem\BuildVariantElementInfo.cs" />
+    <Compile Include="ProjectSystem\BuildVariantExtensions.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />

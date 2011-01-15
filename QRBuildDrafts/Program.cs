@@ -318,6 +318,7 @@ ENDLOCAL
         static void TestBuildVariant()
         {
             Variant v = new Variant();
+
             string format = v.GetVariantStringFormat();
             Console.WriteLine("VariantStringFormat  = {0}", format);
             string value = v.ToString();
