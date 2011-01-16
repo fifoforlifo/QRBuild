@@ -6,6 +6,8 @@ using System.Text;
 namespace QRBuild.ProjectSystem
 {
     public abstract class BuildVariant
+        : IComparable<BuildVariant>
+        , IComparable
     {
         private static Dictionary<Type, List<BuildVariantElementInfo>> s_elementInfo =
             new Dictionary<Type, List<BuildVariantElementInfo>>();
@@ -74,6 +76,24 @@ namespace QRBuild.ProjectSystem
 
             elements.Sort();
             return elements;
+        }
+
+        /// Returns a strictly ordered comparison of each element's string value.
+        public int CompareTo(BuildVariant rhs)
+        {
+            foreach (BuildVariantElementInfo element in Elements) {
+                string lhsValue = element.GetValue(this);
+                string rhsValue = element.GetValue(rhs);
+                int diff = lhsValue.CompareTo(rhsValue);
+                if (diff != 0) {
+                    return diff;
+                }
+            }
+            return 0;
+        }
+        int IComparable.CompareTo(object rhs)
+        {
+            return CompareTo((BuildVariant)rhs);
         }
     }
 }

@@ -1,0 +1,88 @@
+//@ using assembly "QRBuild";
+
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using QRBuild;
+using QRBuild.IO;
+using QRBuild.ProjectSystem;
+using QRBuild.Translations.IO;
+
+namespace Build
+{
+    public sealed class Locations : ProjectLocations
+    {
+        public static readonly Locations Instance;
+
+        public readonly string LibA;
+        public readonly string Prog;
+
+        private Locations(string dir)
+        {
+            LibA = dir + @"\LibA\LibA.qr";
+            Prog = dir + @"\Prog\Prog.qr";
+        }
+
+        static Locations()
+        {
+            string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
+            Instance = new Locations(dir);
+        }
+    }
+
+    [QRProject]
+    public class Bootstrap : Project
+    {
+        public override void Initialize()
+        {
+        }
+
+        public override void AddToGraph(BuildVariant variant)
+        {
+            var locations = Locations.Instance.GetLocations();
+
+            string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
+            string fnam = "env.qh";
+            string envqhPath = Path.Combine(dir, fnam);
+            string envqhContents = GenerateEnvQh(locations);
+            QRFile.WriteIfContentsDifferUTF8(envqhContents, envqhPath);
+
+            foreach (var kvp in locations) {
+                string locationDir = Path.GetDirectoryName(kvp.Value);
+                if (locationDir != dir) {
+                    string destFilePath = Path.Combine(locationDir, fnam);
+
+                    new FileCopy(
+                        ProjectManager.BuildGraph,
+                        envqhPath,
+                        destFilePath,
+                        dir);
+                }
+            }
+        }
+
+        public override Target DefaultTarget
+        {
+            get
+            {
+                Target target = ProjectManager.GetTarget(DefaultTargetName);
+                return target;
+            }
+        }
+
+        private string GenerateEnvQh(IDictionary<string, string> locations)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (var kvp in locations) {
+                builder.AppendFormat(
+                    "//@ define  {0,-20}    {1}\n",
+                    kvp.Key,
+                    kvp.Value);
+            }
+            string result = builder.ToString();
+            return result;
+        }
+
+        private readonly string DefaultTargetName = "bootstrap";
+    }
+}

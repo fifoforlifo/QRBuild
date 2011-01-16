@@ -9,7 +9,8 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>QRBuild</RootNamespace>
-    <AssemblyName>QR</AssemblyName>
+    <AssemblyName>QRBuild</AssemblyName>
+	<TargetName>qr</TargetName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>
@@ -56,6 +57,7 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />
+    <Compile Include="ProjectSystem\ProjectLocations.cs" />
     <Compile Include="ProjectSystem\ProjectManager.cs" />
     <Compile Include="ProjectSystem\QRProjectAttribute.cs" />
     <Compile Include="ProjectSystem\Target.cs" />

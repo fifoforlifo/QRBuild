@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.IO;
 using System.Linq;
+using QRBuild.IO;
 using QRBuild.Linq;
 
 namespace QRBuild.ProjectSystem
@@ -16,13 +20,39 @@ namespace QRBuild.ProjectSystem
             get; private set;
         }
 
+        public Assembly LoadProjectFile(string filePath, BuildVariant variant)
+        {
+            string path = QRPath.GetCanonical(filePath);
+
+            if (!File.Exists(path)) {
+                throw new FileNotFoundException("Project file does not exist on disk.", filePath);
+            }
+
+            ProjectKey newKey = new ProjectKey(path, variant);
+            Assembly assembly;
+            if (m_projects.TryGetValue(newKey, out assembly)) {
+                if (assembly == null) {
+                    // TODO: track enough info to print the reference chain
+                    throw new InvalidOperationException("Circular reference detected between projects.");
+                }
+                return assembly;
+            }
+
+            // Place a marker that indicates we have started processing the assembly.
+            // (this is the counter-part to the null-check above for detecting circular references)
+            m_projects[newKey] = null;
+
+            ProjectLoader loader = new ProjectLoader(this, variant, path);
+            m_projects[newKey] = loader.Assembly;
+            return loader.Assembly;
+        }
+
         /// Returns an existing Target instance, or creates a new
         /// one and returns that.
         public Target CreateTarget(string name)
         {
             Target target = GetTarget(name);
-            if (target == null)
-            {
+            if (target == null) {
                 target = new Target(name);
                 m_targets[name] = target;
             }
@@ -33,8 +63,9 @@ namespace QRBuild.ProjectSystem
         public Target GetTarget(string name)
         {
             Target target;
-            if (m_targets.TryGetValue(name, out target))
+            if (m_targets.TryGetValue(name, out target)) {
                 return target;
+            }
             return null;
         }
 
@@ -45,7 +76,7 @@ namespace QRBuild.ProjectSystem
             return targets;
         }
 
-        public ICollection<string> GetTargetFiles(IEnumerable<string> targetNames)
+        public HashSet<string> GetTargetFiles(IEnumerable<string> targetNames)
         {
             HashSet<string> visitedTargets = new HashSet<string>();
             HashSet<string> files = new HashSet<string>();
@@ -62,7 +93,7 @@ namespace QRBuild.ProjectSystem
                 visitedTargets.Add(targetName);
 
                 Target target = GetTarget(targetName);
-                if (target == null) {
+                if (target == null || target.Name == targetName) {
                     files.Add(targetName);
                     continue;
                 }
@@ -73,6 +104,31 @@ namespace QRBuild.ProjectSystem
             return files;
         }
 
-        private IDictionary<string, Target> m_targets = new Dictionary<string, Target>();
+        class ProjectKey : IComparable<ProjectKey>
+        {
+            public ProjectKey(string path, BuildVariant variant)
+            {
+                Path = path;
+                BuildVariant = variant;
+            }
+
+            public int CompareTo(ProjectKey rhs)
+            {
+                int pathDiff = Path.CompareTo(rhs.Path);
+                if (pathDiff != 0) {
+                    return pathDiff;
+                }
+                return BuildVariant.CompareTo(rhs.BuildVariant);
+            }
+
+            public readonly string Path;
+            public readonly BuildVariant BuildVariant;
+        }
+
+        private readonly Dictionary<string, Target> m_targets =
+            new Dictionary<string, Target>();
+
+        private readonly Dictionary<ProjectKey, Assembly> m_projects =
+            new Dictionary<ProjectKey, Assembly>();
     }
 }

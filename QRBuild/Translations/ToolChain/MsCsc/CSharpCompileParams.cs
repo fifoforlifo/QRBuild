@@ -7,24 +7,32 @@ namespace QRBuild.Translations.ToolChain.MsCsc
     /// Values that can be passed to /target.
     public static class CSharpTargetFormats
     {
-        public static string ConsoleExe = "exe";
-        public static string WindowsExe = "winexe";
-        public static string Library = "library";
-        public static string Module = "module";
+        public static readonly string ConsoleExe = "exe";
+        public static readonly string WindowsExe = "winexe";
+        public static readonly string Library = "library";
+        public static readonly string Module = "module";
     }
 
     public static class CSharpPlatforms
     {
-        public static string X86 = "x86";
-        public static string Itanium = "Itanium";
-        public static string Amd64 = "x64";
-        public static string AnyCpu = "anycpu";
+        public static readonly string X86 = "x86";
+        public static readonly string Itanium = "Itanium";
+        public static readonly string Amd64 = "x64";
+        public static readonly string AnyCpu = "anycpu";
     }
 
     public static class CSharpLanguageVersions
     {
-        public static string Iso1 = "ISO-1";
-        public static string Iso2 = "ISO-2";
+        public static readonly string Iso1 = "ISO-1";
+        public static readonly string Iso2 = "ISO-2";
+    }
+
+    public static class CSharpFrameworkVersion
+    {
+        public static readonly string V2_0_50727 = "v2.0.50727";
+        public static readonly string V3_0       = "v3.0";
+        public static readonly string V3_5       = "v3.5";
+        public static readonly string V4_0_30319 = "v4.0.30319";
     }
 
     public class CSharpCompileParams

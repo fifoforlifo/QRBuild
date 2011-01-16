@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace QRBuild.IO
 {
@@ -23,6 +24,14 @@ namespace QRBuild.IO
             foreach (string path in paths) {
                 Delete(path);
             }
+        }
+
+        public static bool WriteIfContentsDifferUTF8(
+            string source,
+            string destFilePath)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(source);
+            return WriteIfContentsDiffer(data, destFilePath);
         }
 
         /// Returns true if the file needed to be written.

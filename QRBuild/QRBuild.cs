@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using QRBuild.ProjectSystem;
 using QRBuild.ProjectSystem.CommandLine;
 
 namespace QRBuild
 {
     public static class QRBuild
     {
+        class DummyVariant : BuildVariant
+        {
+
+        }
+
         public static int Main(string[] args)
         {
             var clHandlers = GetCLHandlers();
 
-            PrintUsage(clHandlers);
+            //PrintUsage(clHandlers);
+            ProjectManager projectManager = new ProjectManager();
+            DummyVariant variant = new DummyVariant();
+            projectManager.LoadProjectFile("bootstrap.qr", variant);
+
+
             return 0;
         }
 

@@ -18,7 +18,6 @@
 "usage: qrbuild build [options] [targets]\n" +
 "  targets       Space-delimited list of targets to build.\n" +
 "options:\n" +
-"  -p            Project file.\n" +
 "";
             }
         }

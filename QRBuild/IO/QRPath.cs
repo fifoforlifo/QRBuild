@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace QRBuild.IO
@@ -69,6 +70,17 @@ namespace QRBuild.IO
                 string absPath = GetAbsolutePath(path, currentDir);
                 dest.Add(path);
             }
+        }
+
+        public static string GetAssemblyFilePath(Type type)
+        {
+            return Assembly.GetAssembly(type).Location;
+        }
+        public static string GetAssemblyDirectory(Type type)
+        {
+            string filePath = GetAssemblyFilePath(type);
+            string dir = Path.GetDirectoryName(filePath);
+            return dir;
         }
     }
 }
