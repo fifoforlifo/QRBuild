@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using QRBuild.IO;
 using QRBuild.ProjectSystem.CommandLine;
 
 namespace QRBuild.ProjectSystem
@@ -13,20 +14,35 @@ namespace QRBuild.ProjectSystem
         }
 
         /// This is set by the ProjectManager when the Project is instantiated.
-        public BuildVariant BuildVariant
+        public BuildVariant Variant
         {
             get; internal set;
         }
 
-        /// This is called by the ProjectManager when the Project is instantiated,
-        /// after all public properties have been set.
-        public virtual void Initialize()
+        public string ProjectDir
         {
+            get
+            {
+                if (m_projectDir == null) {
+                    m_projectDir = QRPath.GetAssemblyDirectory(GetType());
+                }
+                return m_projectDir;
+            }
+        }
+
+        internal void AddToGraphOnce()
+        {
+            if (m_addedToGraph) {
+                throw new InvalidOperationException("Programmer error.");
+            }
+            m_addedToGraph = true;
+
+            AddToGraph();
         }
 
         /// AddToGraph is called by the ordinary build/clean/clobber commands.
         /// The implementor should add Translations to ProjectManager.Graph as appropriate.
-        public abstract void AddToGraph(BuildVariant variant);
+        protected abstract void AddToGraph();
 
         /// DefaultTarget represents the default set of target files that
         /// will be built if a user does not specify any targets explicitly.
@@ -36,5 +52,8 @@ namespace QRBuild.ProjectSystem
         {
             get;
         }
+
+        private string m_projectDir;
+        private bool m_addedToGraph;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using QRBuild.ProjectSystem;
 using QRBuild.ProjectSystem.CommandLine;
@@ -22,8 +23,24 @@ namespace QRBuild
             //PrintUsage(clHandlers);
             ProjectManager projectManager = new ProjectManager();
             DummyVariant variant = new DummyVariant();
-            projectManager.LoadProjectFile("bootstrap.qr", variant);
 
+            //Assembly assembly = projectManager.LoadProjectFile("bootstrap.qr", variant);
+            Assembly assembly = projectManager.LoadProjectFile("build.qr", variant);
+            var projects = projectManager.AddAllProjectsInAssembly(assembly, variant);
+
+            BuildOptions options = new BuildOptions();
+            options.FileDecider = new FileSizeDateDecider();
+            var targets = projects.Select(project => project.DefaultTarget.Name).ToList();
+            var targetFiles = projectManager.GetTargetFiles(targets);
+            BuildResults results = projectManager.BuildGraph.Execute(
+                BuildAction.Build,
+                options,
+                targetFiles,
+                true);
+
+            if (!results.Success) {
+                throw new InvalidOperationException();
+            }
 
             return 0;
         }

@@ -50,9 +50,13 @@ namespace QRBuild.IO
             byte[] source,
             string destFilePath)
         {
+            if (!File.Exists(destFilePath)) {
+                return true;
+            }
+
             var fileInfo = new FileInfo(destFilePath);
             if (fileInfo.Length != source.Length) {
-                return false;
+                return true;
             }
 
             // lengths are the same, so load the file's current contents and compare

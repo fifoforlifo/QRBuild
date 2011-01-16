@@ -10,7 +10,7 @@ namespace QRBuild.ProjectSystem
 {
     public sealed class ProjectManager
     {
-        public ProjectManager()
+        internal ProjectManager()
         {
             BuildGraph = new BuildGraph();
         }
@@ -20,7 +20,35 @@ namespace QRBuild.ProjectSystem
             get; private set;
         }
 
-        public Assembly LoadProjectFile(string filePath, BuildVariant variant)
+        /// TODO: this should be an extension method
+        public TProject GetOrCreateProject<TProject>(BuildVariant variant)
+            where TProject : Project
+        {
+            Type type = typeof(TProject);
+            Project project = GetOrCreateProject(type, variant);
+            return (TProject)project;
+        }
+
+        public Project GetOrCreateProject(Type type, BuildVariant variant)
+        {
+            // Get the project if it already exists.
+            ProjectKey newKey = new ProjectKey(type, variant);
+            Project project;
+            if (m_projects.TryGetValue(newKey, out project)) {
+                return project;
+            }
+
+            // Create the project.
+            object projectObject = Activator.CreateInstance(type);
+            project = (Project)projectObject;
+            project.ProjectManager = this;
+            project.Variant = variant;
+            project.AddToGraphOnce();
+            m_projects[newKey] = project;
+            return project;
+        }
+
+        internal Assembly LoadProjectFile(string filePath, BuildVariant variant)
         {
             string path = QRPath.GetCanonical(filePath);
 
@@ -28,9 +56,9 @@ namespace QRBuild.ProjectSystem
                 throw new FileNotFoundException("Project file does not exist on disk.", filePath);
             }
 
-            ProjectKey newKey = new ProjectKey(path, variant);
+            ProjectAssemblyKey newKey = new ProjectAssemblyKey(path, variant);
             Assembly assembly;
-            if (m_projects.TryGetValue(newKey, out assembly)) {
+            if (m_projectAssemblies.TryGetValue(newKey, out assembly)) {
                 if (assembly == null) {
                     // TODO: track enough info to print the reference chain
                     throw new InvalidOperationException("Circular reference detected between projects.");
@@ -40,16 +68,32 @@ namespace QRBuild.ProjectSystem
 
             // Place a marker that indicates we have started processing the assembly.
             // (this is the counter-part to the null-check above for detecting circular references)
-            m_projects[newKey] = null;
+            m_projectAssemblies[newKey] = null;
 
             ProjectLoader loader = new ProjectLoader(this, variant, path);
-            m_projects[newKey] = loader.Assembly;
+            m_projectAssemblies[newKey] = loader.Assembly;
             return loader.Assembly;
+        }
+
+        internal HashSet<Project> AddAllProjectsInAssembly(Assembly assembly, BuildVariant variant)
+        {
+            HashSet<Project> projects = new HashSet<Project>();
+
+            Type[] types = assembly.GetTypes();
+            foreach (Type type in types) {
+                object[] attributeObjects = type.GetCustomAttributes(typeof(PrimaryProjectAttribute), true);
+                if (attributeObjects.Length == 1) {
+                    Project project = GetOrCreateProject(type, variant);
+                    projects.Add(project);
+                }
+            }
+
+            return projects;
         }
 
         /// Returns an existing Target instance, or creates a new
         /// one and returns that.
-        public Target CreateTarget(string name)
+        public Target GetOrCreateTarget(string name)
         {
             Target target = GetTarget(name);
             if (target == null) {
@@ -93,26 +137,35 @@ namespace QRBuild.ProjectSystem
                 visitedTargets.Add(targetName);
 
                 Target target = GetTarget(targetName);
-                if (target == null || target.Name == targetName) {
+                if (target == null) {
                     files.Add(targetName);
                     continue;
                 }
 
-                pendingTargetNames.AddRange(target.Targets);
+                foreach (var childTarget in target.Targets) {
+                    if (childTarget == target.Name) {
+                        // This is a special escape to allow a target to be both
+                        // a real file and an aggregate target.
+                        files.Add(childTarget);
+                    }
+                    else {
+                        pendingTargetNames.Push(childTarget);
+                    }
+                }
             }
 
             return files;
         }
 
-        class ProjectKey : IComparable<ProjectKey>
+        class ProjectAssemblyKey : IComparable<ProjectAssemblyKey>
         {
-            public ProjectKey(string path, BuildVariant variant)
+            public ProjectAssemblyKey(string path, BuildVariant variant)
             {
                 Path = path;
                 BuildVariant = variant;
             }
 
-            public int CompareTo(ProjectKey rhs)
+            public int CompareTo(ProjectAssemblyKey rhs)
             {
                 int pathDiff = Path.CompareTo(rhs.Path);
                 if (pathDiff != 0) {
@@ -125,10 +178,34 @@ namespace QRBuild.ProjectSystem
             public readonly BuildVariant BuildVariant;
         }
 
+        class ProjectKey : IComparable<ProjectKey>
+        {
+            public ProjectKey(Type type, BuildVariant variant)
+            {
+                ProjectType = type;
+                BuildVariant = variant;
+            }
+
+            public int CompareTo(ProjectKey rhs)
+            {
+                int typeDiff = ProjectType.FullName.CompareTo(rhs.ProjectType.FullName);
+                if (typeDiff != 0) {
+                    return typeDiff;
+                }
+                return BuildVariant.CompareTo(rhs.BuildVariant);
+            }
+
+            public readonly Type ProjectType;
+            public readonly BuildVariant BuildVariant;
+        }
+
         private readonly Dictionary<string, Target> m_targets =
             new Dictionary<string, Target>();
 
-        private readonly Dictionary<ProjectKey, Assembly> m_projects =
-            new Dictionary<ProjectKey, Assembly>();
+        private readonly Dictionary<ProjectAssemblyKey, Assembly> m_projectAssemblies =
+            new Dictionary<ProjectAssemblyKey, Assembly>();
+
+        private readonly Dictionary<ProjectKey, Project> m_projects =
+            new Dictionary<ProjectKey, Project>();
     }
 }

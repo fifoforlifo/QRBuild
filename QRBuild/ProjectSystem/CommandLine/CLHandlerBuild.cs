@@ -15,9 +15,12 @@
             get
             {
                 return
-"usage: qrbuild build [options] [targets]\n" +
+"usage: qr build variant [options] [targets]\n" +
 "  targets       Space-delimited list of targets to build.\n" +
+"                By default, the DefaultTarget of all projects in the\n" +
+"                project file are processed.\n" +
 "options:\n" +
+"  -p fname      Load specified project file.\n" +
 "";
             }
         }

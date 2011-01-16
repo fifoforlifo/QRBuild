@@ -10,17 +10,6 @@ namespace QRBuild.ProjectSystem
 {
     internal class ProjectLoader
     {
-        /// 'define name value'
-        private readonly Dictionary<string, string> m_defines =
-            new Dictionary<string, string>();
-
-        /// 'using assembly name' or 'using project name'
-        private readonly HashSet<Assembly> m_usingAssemblies =
-            new HashSet<Assembly>();
-
-        /// Current directory to use when computing file paths.
-        private readonly string m_currentDir;
-
         public Assembly Assembly
         {
             get; private set;
@@ -52,9 +41,31 @@ namespace QRBuild.ProjectSystem
 
             string text = File.ReadAllText(filePath);
             ProcessText(text);
+            string assemblyFilePath = Compile(filePath);
 
+            Assembly = TryLoadAssembly(assemblyFilePath);
+        }
+
+        private void ProcessText(string text)
+        {
+            using (StringReader reader = new StringReader(text)) {
+                int lineNumber = 0;
+                for (string line = ""; line != null; line = reader.ReadLine(), lineNumber++) {
+                    const string prefix = "//@";
+                    if (!line.StartsWith(prefix)) {
+                        continue;
+                    }
+
+                    ProcessLine(line, prefix.Length);
+                }
+            }
+        }
+
+        private string Compile(string filePath)
+        {
             BuildGraph buildGraph = new BuildGraph();
             var cscp = new CSharpCompileParams();
+            cscp.BuildFileDir = m_currentDir + "\\build";
             cscp.Sources.Add(filePath);
             cscp.OutputFilePath = filePath + ".dll";
             cscp.TargetFormat = CSharpTargetFormats.Library;
@@ -76,22 +87,7 @@ namespace QRBuild.ProjectSystem
                 throw new InvalidOperationException();
             }
 
-            Assembly = TryLoadAssembly(cscp.OutputFilePath);
-        }
-
-        private void ProcessText(string text)
-        {
-            using (StringReader reader = new StringReader(text)) {
-                int lineNumber = 0;
-                for (string line = ""; line != null; line = reader.ReadLine(), lineNumber++) {
-                    const string prefix = "//@";
-                    if (!line.StartsWith(prefix)) {
-                        continue;
-                    }
-
-                    ProcessLine(line, prefix.Length);
-                }
-            }
+            return cscp.OutputFilePath;
         }
 
         enum TokenID
@@ -321,13 +317,11 @@ namespace QRBuild.ProjectSystem
             }
 
             Assembly assembly = null;
-            try {
-                assembly = Assembly.Load(name);
-            }
-            catch (Exception) {
-            }
-            if (assembly == null) {
+            if (File.Exists(name)) {
                 assembly = Assembly.LoadFrom(name);
+            }
+            else {
+                assembly = Assembly.LoadWithPartialName(name);
             }
             return assembly;
         }
@@ -341,5 +335,16 @@ namespace QRBuild.ProjectSystem
             }
             return null;
         }
+
+        /// 'define name value'
+        private readonly Dictionary<string, string> m_defines =
+            new Dictionary<string, string>();
+
+        /// 'using assembly name' or 'using project name'
+        private readonly HashSet<Assembly> m_usingAssemblies =
+            new HashSet<Assembly>();
+
+        /// Current directory to use when computing file paths.
+        private readonly string m_currentDir;
     }
 }

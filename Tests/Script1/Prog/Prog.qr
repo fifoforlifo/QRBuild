@@ -1,0 +1,79 @@
+//@ include "env.qh";
+//@ using assembly "QRBuild";
+//@ using project Bootstrap;
+//@ using project LibA;
+
+using System;
+using QRBuild;
+using QRBuild.ProjectSystem;
+using QRBuild.Translations.ToolChain.Msvc;
+
+namespace Build
+{
+    [PrimaryProject]
+    public class Prog : Project
+    {
+        protected override void AddToGraph()
+        {
+            // In this case, LibA uses the same variant type as Prog.
+            LibA libA = ProjectManager.GetOrCreateProject<LibA>(Variant);
+
+            var cc = CompileOne("main.cpp", ccp => {
+                ccp.IncludeDirs.AddRange(libA.PublicIncludeDirs);
+            });
+
+            var lp = new MsvcLinkerParams();
+            lp.VcBinDir = Config.VcBinDir;
+            lp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
+            lp.CompileDir = ProjectDir;
+            // TODO: use Variant to decide output directory
+            lp.BuildFileDir = ProjectDir + "\\built";
+            lp.Inputs.Add(cc.Params.ObjectPath);
+            foreach (var mcc in libA.ObjectFiles) {
+                lp.Inputs.Add(mcc.ObjectPath);
+            }
+            lp.Inputs.Add(Config.PlatformSdkDir + @"\lib\kernel32.lib");
+            lp.Inputs.Add(Config.PlatformSdkDir + @"\lib\user32.lib");
+            var link = new MsvcLink(ProjectManager.BuildGraph, lp);
+
+            DefaultTarget.Targets.Add(link.Params.OutputFilePath);
+        }
+
+        public override Target DefaultTarget
+        {
+            get
+            {
+                Target target = ProjectManager.GetOrCreateTarget(DefaultTargetName);
+                return target;
+            }
+        }
+
+        // NOTE: this isn't a great pattern, but is concise for the caller
+        private MsvcCompile CompileOne(
+            string sourceFile,
+            Action<MsvcCompileParams> onCompilerFlagsInitialized)
+        {
+            // Create the params, and initialize them according
+            // to a standard scheme.
+            var ccp = new MsvcCompileParams();
+            ccp.CompileDir = ProjectDir;
+            // TODO: use Variant to decide output directory
+            ccp.BuildFileDir = ProjectDir + "\\built";
+            ccp.SourceFile = sourceFile;
+            ccp.Compile = true;
+            ccp.VcBinDir = Config.VcBinDir;
+            // TODO: use Variant to decide architecture
+            ccp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
+
+            if (onCompilerFlagsInitialized != null) {
+                onCompilerFlagsInitialized(ccp);
+            }
+
+            // create the Translation to do the work
+            var cc = new MsvcCompile(ProjectManager.BuildGraph, ccp);
+            return cc;
+        }
+
+        private static readonly string DefaultTargetName = "prog";
+    }
+}

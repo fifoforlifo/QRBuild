@@ -10,7 +10,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>QRBuild</RootNamespace>
     <AssemblyName>QRBuild</AssemblyName>
-	<TargetName>qr</TargetName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StartupObject>
@@ -55,11 +54,12 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
+    <Compile Include="ProjectSystem\PrimaryBuildVariantAttribute.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />
     <Compile Include="ProjectSystem\ProjectLocations.cs" />
     <Compile Include="ProjectSystem\ProjectManager.cs" />
-    <Compile Include="ProjectSystem\QRProjectAttribute.cs" />
+    <Compile Include="ProjectSystem\PrimaryProjectAttribute.cs" />
     <Compile Include="ProjectSystem\Target.cs" />
     <Compile Include="ProjectSystem\VariantPartAttribute.cs" />
     <Compile Include="QRBuild.cs" />
@@ -97,10 +97,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
+	<Copy SourceFiles="$(ProjectDir)$(OutDir)$(TargetName)$(TargetExt)"
+	      DestinationFiles="$(ProjectDir)$(OutDir)qr.exe"
+		  SkipUnchangedFiles="true"
+		  />
   </Target>
-  -->
 </Project>

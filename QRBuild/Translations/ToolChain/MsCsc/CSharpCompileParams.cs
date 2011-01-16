@@ -72,7 +72,7 @@ namespace QRBuild.Translations.ToolChain.MsCsc
         public string LanguageVersion;
 
         //-- Miscellaneous
-        public bool NoConfig = true;
+        public bool NoConfig = false;
 
         //-- Advanced
         public string MainType;

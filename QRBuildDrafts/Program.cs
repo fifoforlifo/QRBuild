@@ -352,8 +352,8 @@ ENDLOCAL
             TestDependencyChain();
 #endif
 
-#if false
-            for (int i = 0; i < 100; i++) {
+#if true
+            for (int i = 0; i < 1; i++) {
                 CompileLink1.TestCppCompileLink();
             }
 #endif

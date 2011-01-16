@@ -12,8 +12,7 @@ namespace QRBuild.ProjectSystem
 
             Type type = GetType();
             FieldInfo[] fields = type.GetFields(
-                BindingFlags.Public |
-                BindingFlags.Static);
+                BindingFlags.Public | BindingFlags.Instance);
             foreach (var fieldInfo in fields) {
                 if (fieldInfo.FieldType == typeof(System.String)) {
                     object valueObject = fieldInfo.GetValue(this);

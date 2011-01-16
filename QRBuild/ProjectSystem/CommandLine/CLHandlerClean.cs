@@ -15,8 +15,9 @@
             get
             {
                 return
-"usage: qrbuild clean [options] [project-file]\n" +
+"usage: qrbuild clean variant [options] [project-file]\n" +
 "options:\n" +
+"  -p fname      Load specified project file.\n" +
 "";
             }
         }

@@ -1,0 +1,14 @@
+*.dll
+*.pdb
+*.obj
+env.qh
+obj/**/*
+
+*.bat
+*.rsp
+*.deps
+*.log
+*.d
+*.i
+
+/build/*.deps

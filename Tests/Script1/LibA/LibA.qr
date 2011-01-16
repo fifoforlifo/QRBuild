@@ -1,0 +1,61 @@
+//@ include "env.qh";
+//@ using assembly "QRBuild";
+//@ using project Bootstrap;
+
+using System.Collections.Generic;
+using System.IO;
+using QRBuild;
+using QRBuild.ProjectSystem;
+using QRBuild.Translations.ToolChain.Msvc;
+
+namespace Build
+{
+    [PrimaryProject]
+    public class LibA : Project
+    {
+        protected override void AddToGraph()
+        {
+            PublicIncludeDirs.Add(Path.GetDirectoryName(Locations.S.LibA));
+
+            var cc_a = CompileOne("a.cpp");
+            ObjectFiles.Add(cc_a.Params);
+            DefaultTarget.Targets.Add(cc_a.Params.ObjectPath);
+        }
+
+        public override Target DefaultTarget
+        {
+            get
+            {
+                Target target = ProjectManager.GetOrCreateTarget(DefaultTargetName);
+                return target;
+            }
+        }
+
+        public readonly HashSet<MsvcCompileParams> ObjectFiles =
+            new HashSet<MsvcCompileParams>();
+
+        public List<string> PublicIncludeDirs = new List<string>();
+
+        // NOTE: this isn't a great pattern, but is concise for the caller
+        private MsvcCompile CompileOne(string sourceFile)
+        {
+            // Create the params, and initialize them according
+            // to a standard scheme.
+            var ccp = new MsvcCompileParams();
+            ccp.CompileDir = ProjectDir;
+            // TODO: use Variant to decide output directory
+            ccp.BuildFileDir = ProjectDir + "\\built";
+            ccp.SourceFile = sourceFile;
+            ccp.Compile = true;
+            ccp.VcBinDir = Config.VcBinDir;
+            // TODO: use Variant to decide architecture
+            ccp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
+
+            // create the Translation to do the work
+            var cc = new MsvcCompile(ProjectManager.BuildGraph, ccp);
+            return cc;
+        }
+
+        private static readonly string DefaultTargetName = "liba";
+    }
+}

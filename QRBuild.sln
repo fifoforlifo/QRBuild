@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QRBuildDrafts", "QRBuildDra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QRBuild", "QRBuild\QRBuild.csproj", "{8449AAC7-39A7-419A-B470-9DC457360947}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cb", "Tests\Script1\cb.csproj", "{8968367B-1389-464F-8708-747FEAF44BA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{8449AAC7-39A7-419A-B470-9DC457360947}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8449AAC7-39A7-419A-B470-9DC457360947}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8449AAC7-39A7-419A-B470-9DC457360947}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8968367B-1389-464F-8708-747FEAF44BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8968367B-1389-464F-8708-747FEAF44BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8968367B-1389-464F-8708-747FEAF44BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8968367B-1389-464F-8708-747FEAF44BA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

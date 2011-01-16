@@ -1,5 +1,6 @@
 //@ using assembly "QRBuild";
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -12,13 +13,16 @@ namespace Build
 {
     public sealed class Locations : ProjectLocations
     {
-        public static readonly Locations Instance;
+        public static readonly Locations S;
 
+        public readonly string Bootstrap;
         public readonly string LibA;
         public readonly string Prog;
 
+
         private Locations(string dir)
         {
+            Bootstrap = dir + @"\\bootstrap.qr";
             LibA = dir + @"\LibA\LibA.qr";
             Prog = dir + @"\Prog\Prog.qr";
         }
@@ -26,24 +30,37 @@ namespace Build
         static Locations()
         {
             string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
-            Instance = new Locations(dir);
+            S = new Locations(dir);
         }
     }
 
-    [QRProject]
+    public static class Config
+    {
+        public static readonly string VcBinDir =
+            @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
+
+        public static readonly string PlatformSdkDir =
+            @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
+    }
+
+    [PrimaryBuildVariant]
+    public class BootstrapVariant
+    {
+        // no fields since bootstrap does not vary
+    }
+
+    [PrimaryProject]
     public class Bootstrap : Project
     {
-        public override void Initialize()
+        protected override void AddToGraph()
         {
-        }
-
-        public override void AddToGraph(BuildVariant variant)
-        {
-            var locations = Locations.Instance.GetLocations();
+            var locations = Locations.S.GetLocations();
 
             string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
             string fnam = "env.qh";
             string envqhPath = Path.Combine(dir, fnam);
+
+            // Generate the source file here.
             string envqhContents = GenerateEnvQh(locations);
             QRFile.WriteIfContentsDifferUTF8(envqhContents, envqhPath);
 
@@ -56,7 +73,9 @@ namespace Build
                         ProjectManager.BuildGraph,
                         envqhPath,
                         destFilePath,
-                        dir);
+                        locationDir + "\\build");
+
+                    DefaultTarget.Targets.Add(destFilePath);
                 }
             }
         }
@@ -65,7 +84,7 @@ namespace Build
         {
             get
             {
-                Target target = ProjectManager.GetTarget(DefaultTargetName);
+                Target target = ProjectManager.GetOrCreateTarget(DefaultTargetName);
                 return target;
             }
         }
@@ -75,14 +94,15 @@ namespace Build
             StringBuilder builder = new StringBuilder();
             foreach (var kvp in locations) {
                 builder.AppendFormat(
-                    "//@ define  {0,-20}    {1}\n",
+                    "//@ define  {0,-20}    \"{1}\"{2}",
                     kvp.Key,
-                    kvp.Value);
+                    kvp.Value,
+                    Environment.NewLine);
             }
             string result = builder.ToString();
             return result;
         }
 
-        private readonly string DefaultTargetName = "bootstrap";
+        private static readonly string DefaultTargetName = "bootstrap";
     }
 }

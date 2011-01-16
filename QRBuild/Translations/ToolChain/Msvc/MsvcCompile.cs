@@ -64,8 +64,7 @@ EXIT %ERRORLEVEL%
 
             File.WriteAllText(batchFilePath, batchFile);
 
-            using (QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir, false, ""))
-            {
+            using (QRProcess process = QRProcess.LaunchBatchFile(batchFilePath, m_params.CompileDir, false, "")) {
                 process.WaitHandle.WaitOne();
 
                 string output = File.ReadAllText(logFilePath);
