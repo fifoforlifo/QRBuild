@@ -1,6 +1,6 @@
 ﻿namespace QRBuild.ProjectSystem.CommandLine
 {
-    internal class CLHandlerClean : CLHandler
+    internal class CLHandlerClean : CLHandlerProject
     {
         public override string Name
         {
@@ -10,21 +10,10 @@
         {
             get { return "Incremental clean."; }
         }
-        public override string LongHelp
-        {
-            get
-            {
-                return
-"usage: qrbuild clean variant [options] [project-file]\n" +
-"options:\n" +
-"  -p fname      Load specified project file.\n" +
-"";
-            }
-        }
 
-        public override void Execute(string[] args)
+        protected override BuildAction BuildAction
         {
-            throw new System.NotImplementedException();
+            get { return BuildAction.Clean; }
         }
     }
 }

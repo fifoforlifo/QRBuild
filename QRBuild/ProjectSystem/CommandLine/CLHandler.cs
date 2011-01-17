@@ -16,7 +16,7 @@ namespace QRBuild.ProjectSystem.CommandLine
         {
             get;
         }
-        public abstract void Execute(string[] args);
+        public abstract int Execute(string[] args);
 
         public int CompareTo(CLHandler rhs)
         {

@@ -11,46 +11,48 @@ namespace QRBuild
 {
     public static class QRBuild
     {
-        class DummyVariant : BuildVariant
-        {
-
-        }
-
         public static int Main(string[] args)
         {
+            DateTime startTime = DateTime.Now;
             var clHandlers = GetCLHandlers();
 
-            //PrintUsage(clHandlers);
-            ProjectManager projectManager = new ProjectManager();
+            if (args.Length < 1) {
+                PrintUsage(clHandlers);
+                return -1;
+            }
 
-            bool bootstrap = false;
-            HashSet<Project> projects;
-            if (bootstrap) {
-                string variantString = "";
-                Assembly assembly = projectManager.LoadProjectFile("bootstrap.qr", variantString);
-                projects = projectManager.AddAllProjectsInAssembly(assembly, variantString);
+            if (args[0] == "help") {
+                if (args.Length < 2) {
+                    PrintUsage(clHandlers);
+                    return 0;
+                }
+
+                foreach (CLHandler clHandler in clHandlers) {
+                    if (clHandler.Name == args[1]) {
+                        Console.Write(clHandler.LongHelp);
+                        return 0;
+                    }
+                }
+
+                Console.WriteLine("Error: Unknown command {0}", args[1]);
+                return -1;
             }
             else {
-                string variantString = "Debug.x86";
-                Assembly assembly = projectManager.LoadProjectFile("build.qr", variantString);
-                projects = projectManager.AddAllProjectsInAssembly(assembly, variantString);
+                // Find the command and execute it.
+                foreach (CLHandler clHandler in clHandlers) {
+                    if (clHandler.Name == args[0]) {
+                        int result = clHandler.Execute(args);
+                        DateTime endTime = DateTime.Now;
+
+                        TimeSpan totalTime = endTime - startTime;
+                        Console.WriteLine("# TotalTime                             = {0}", totalTime);
+                        return result;
+                    }
+                }
+
+                Console.WriteLine("Error: Unknown command {0}", args[0]);
+                return -1;
             }
-
-            BuildOptions options = new BuildOptions();
-            options.FileDecider = new FileSizeDateDecider();
-            var targets = projects.Select(project => project.DefaultTarget.Name).ToList();
-            var targetFiles = projectManager.GetTargetFiles(targets);
-            BuildResults results = projectManager.BuildGraph.Execute(
-                BuildAction.Build,
-                options,
-                targetFiles,
-                true);
-
-            if (!results.Success) {
-                throw new InvalidOperationException();
-            }
-
-            return 0;
         }
 
         private static void PrintUsage(IList<CLHandler> clHandlers)

@@ -333,16 +333,6 @@ namespace QRBuild.ProjectSystem
             return assembly;
         }
 
-        public static string FindDefaultProjectFile()
-        {
-            string currentDir = Directory.GetCurrentDirectory();
-            string[] files = Directory.GetFiles(currentDir, "*.qr");
-            if (files.Length == 1) {
-                return files[0];
-            }
-            return null;
-        }
-
         /// 'define name value'
         private readonly Dictionary<string, string> m_defines =
             new Dictionary<string, string>();

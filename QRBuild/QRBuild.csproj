@@ -54,6 +54,7 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerProject.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />
     <Compile Include="ProjectSystem\ProjectLocations.cs" />
