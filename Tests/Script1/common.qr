@@ -1,0 +1,64 @@
+//@ using assembly "QRBuild";
+
+using QRBuild;
+using QRBuild.IO;
+using QRBuild.ProjectSystem;
+
+
+namespace Build
+{
+    public sealed class Locations : ProjectLocations
+    {
+        public static readonly Locations S;
+
+        public readonly string Common;
+        public readonly string Bootstrap;
+        public readonly string LibA;
+        public readonly string Prog;
+
+
+        private Locations(string dir)
+        {
+            Common = dir + @"\\common.qr";
+            Bootstrap = dir + @"\\bootstrap.qr";
+            LibA = dir + @"\LibA\LibA.qr";
+            Prog = dir + @"\Prog\Prog.qr";
+        }
+
+        static Locations()
+        {
+            string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
+            S = new Locations(dir);
+        }
+    }
+
+    public static class Config
+    {
+        public static readonly string VcBinDir =
+            @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
+
+        public static readonly string PlatformSdkDir =
+            @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
+    }
+
+    public enum Architecture
+    {
+        x86,
+        amd64,
+    }
+    public enum Configuration
+    {
+        Debug,
+        Develop,
+        Release,
+    }
+
+    public class MainVariant : BuildVariant
+    {
+        [VariantPart(100)]
+        public Configuration Configuration;
+
+        [VariantPart(200)]
+        public Architecture Architecture;
+    }
+}

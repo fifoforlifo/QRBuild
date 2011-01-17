@@ -2,6 +2,7 @@
 *.pdb
 *.obj
 env.qh
+bin/**/*
 obj/**/*
 
 *.bat

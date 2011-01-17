@@ -22,11 +22,19 @@ namespace QRBuild
 
             //PrintUsage(clHandlers);
             ProjectManager projectManager = new ProjectManager();
-            DummyVariant variant = new DummyVariant();
 
-            //Assembly assembly = projectManager.LoadProjectFile("bootstrap.qr", variant);
-            Assembly assembly = projectManager.LoadProjectFile("build.qr", variant);
-            var projects = projectManager.AddAllProjectsInAssembly(assembly, variant);
+            bool bootstrap = false;
+            HashSet<Project> projects;
+            if (bootstrap) {
+                string variantString = "";
+                Assembly assembly = projectManager.LoadProjectFile("bootstrap.qr", variantString);
+                projects = projectManager.AddAllProjectsInAssembly(assembly, variantString);
+            }
+            else {
+                string variantString = "Debug.x86";
+                Assembly assembly = projectManager.LoadProjectFile("build.qr", variantString);
+                projects = projectManager.AddAllProjectsInAssembly(assembly, variantString);
+            }
 
             BuildOptions options = new BuildOptions();
             options.FileDecider = new FileSizeDateDecider();

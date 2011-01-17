@@ -51,6 +51,7 @@
     <Compile Include="build.qr" />
     <Compile Include="Prog\Prog.qr" />
     <Compile Include="LibA\LibA.qr" />
+    <Compile Include="common.qr" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\QRBuild\QRBuild.csproj">

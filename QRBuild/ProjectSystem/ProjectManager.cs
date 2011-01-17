@@ -48,15 +48,32 @@ namespace QRBuild.ProjectSystem
             return project;
         }
 
-        internal Assembly LoadProjectFile(string filePath, BuildVariant variant)
+        internal HashSet<Project> AddAllProjectsInAssembly(Assembly assembly, string variantString)
         {
-            string path = QRPath.GetCanonical(filePath);
+            HashSet<Project> projects = new HashSet<Project>();
 
-            if (!File.Exists(path)) {
+            Type[] types = assembly.GetTypes();
+            foreach (Type type in types) {
+                object[] attributeObjects = type.GetCustomAttributes(typeof(PrimaryProjectAttribute), true);
+                if (attributeObjects.Length == 1) {
+                    PrimaryProjectAttribute attribute = (PrimaryProjectAttribute)attributeObjects[0];
+                    BuildVariant variant = (BuildVariant)Activator.CreateInstance(attribute.VariantType);
+                    variant.FromString(variantString);
+                    Project project = GetOrCreateProject(type, variant);
+                    projects.Add(project);
+                }
+            }
+
+            return projects;
+        }
+
+        internal Assembly LoadProjectFile(string filePath, string variantString)
+        {
+            if (!File.Exists(filePath)) {
                 throw new FileNotFoundException("Project file does not exist on disk.", filePath);
             }
 
-            ProjectAssemblyKey newKey = new ProjectAssemblyKey(path, variant);
+            ProjectAssemblyKey newKey = new ProjectAssemblyKey(filePath, variantString);
             Assembly assembly;
             if (m_projectAssemblies.TryGetValue(newKey, out assembly)) {
                 if (assembly == null) {
@@ -70,25 +87,9 @@ namespace QRBuild.ProjectSystem
             // (this is the counter-part to the null-check above for detecting circular references)
             m_projectAssemblies[newKey] = null;
 
-            ProjectLoader loader = new ProjectLoader(this, variant, path);
+            ProjectLoader loader = new ProjectLoader(this, variantString, filePath);
             m_projectAssemblies[newKey] = loader.Assembly;
             return loader.Assembly;
-        }
-
-        internal HashSet<Project> AddAllProjectsInAssembly(Assembly assembly, BuildVariant variant)
-        {
-            HashSet<Project> projects = new HashSet<Project>();
-
-            Type[] types = assembly.GetTypes();
-            foreach (Type type in types) {
-                object[] attributeObjects = type.GetCustomAttributes(typeof(PrimaryProjectAttribute), true);
-                if (attributeObjects.Length == 1) {
-                    Project project = GetOrCreateProject(type, variant);
-                    projects.Add(project);
-                }
-            }
-
-            return projects;
         }
 
         /// Returns an existing Target instance, or creates a new
@@ -159,10 +160,10 @@ namespace QRBuild.ProjectSystem
 
         class ProjectAssemblyKey : IComparable<ProjectAssemblyKey>
         {
-            public ProjectAssemblyKey(string path, BuildVariant variant)
+            public ProjectAssemblyKey(string path, string variantString)
             {
                 Path = path;
-                BuildVariant = variant;
+                VariantString = variantString;
             }
 
             public int CompareTo(ProjectAssemblyKey rhs)
@@ -171,11 +172,11 @@ namespace QRBuild.ProjectSystem
                 if (pathDiff != 0) {
                     return pathDiff;
                 }
-                return BuildVariant.CompareTo(rhs.BuildVariant);
+                return VariantString.CompareTo(rhs.VariantString);
             }
 
             public readonly string Path;
-            public readonly BuildVariant BuildVariant;
+            public readonly string VariantString;
         }
 
         class ProjectKey : IComparable<ProjectKey>

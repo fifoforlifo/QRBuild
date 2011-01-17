@@ -1,4 +1,5 @@
 //@ using assembly "QRBuild";
+//@ using project  "common.qr";
 
 using System;
 using System.Collections.Generic;
@@ -11,45 +12,12 @@ using QRBuild.Translations.IO;
 
 namespace Build
 {
-    public sealed class Locations : ProjectLocations
-    {
-        public static readonly Locations S;
-
-        public readonly string Bootstrap;
-        public readonly string LibA;
-        public readonly string Prog;
-
-
-        private Locations(string dir)
-        {
-            Bootstrap = dir + @"\\bootstrap.qr";
-            LibA = dir + @"\LibA\LibA.qr";
-            Prog = dir + @"\Prog\Prog.qr";
-        }
-
-        static Locations()
-        {
-            string dir = QRPath.GetAssemblyDirectory(typeof(Locations));
-            S = new Locations(dir);
-        }
-    }
-
-    public static class Config
-    {
-        public static readonly string VcBinDir =
-            @"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin";
-
-        public static readonly string PlatformSdkDir =
-            @"C:\Program Files\Microsoft SDKs\Windows\v6.0A";
-    }
-
-    [PrimaryBuildVariant]
-    public class BootstrapVariant
+    public class BootstrapVariant : BuildVariant
     {
         // no fields since bootstrap does not vary
     }
 
-    [PrimaryProject]
+    [PrimaryProject(typeof(BootstrapVariant))]
     public class Bootstrap : Project
     {
         protected override void AddToGraph()

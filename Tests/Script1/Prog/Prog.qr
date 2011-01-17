@@ -1,7 +1,7 @@
 //@ include "env.qh";
 //@ using assembly "QRBuild";
-//@ using project Bootstrap;
-//@ using project LibA;
+//@ using project  Common;
+//@ using project  LibA;
 
 using System;
 using QRBuild;
@@ -10,7 +10,7 @@ using QRBuild.Translations.ToolChain.Msvc;
 
 namespace Build
 {
-    [PrimaryProject]
+    [PrimaryProject(typeof(MainVariant))]
     public class Prog : Project
     {
         protected override void AddToGraph()

@@ -1,35 +1,14 @@
 //@ include "env.qh"
 //@ using assembly "QRBuild";
-//@ using project Prog;
+//@ using project  Common
+//@ using project  Prog;
 
 using QRBuild;
 using QRBuild.ProjectSystem;
 
 namespace Build
 {
-    public enum Architecture
-    {
-        x86,
-        amd64,
-    }
-    public enum Configuration
-    {
-        Debug,
-        Develop,
-        Release,
-    }
-
-    [PrimaryBuildVariant]
-    public class MainVariant
-    {
-        [VariantPart(100)]
-        public Architecture Architecture;
-
-        [VariantPart(200)]
-        public Configuration Configuration;
-    }
-
-    [PrimaryProject]
+    [PrimaryProject(typeof(MainVariant))]
     public class MainBuild : Project
     {
         protected override void AddToGraph()

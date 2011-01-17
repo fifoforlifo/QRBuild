@@ -25,18 +25,19 @@ namespace QRBuild.ProjectSystem
             get; private set;
         }
 
-        public BuildVariant BuildVariant
+        public string VariantString
         {
             get; private set;
         }
 
+        /// filePath must be an absolute path
         public ProjectLoader(
             ProjectManager projectManager,
-            BuildVariant variant,
+            string variantString,
             string filePath)
         {
             ProjectManager = projectManager;
-            BuildVariant = variant;
+            VariantString = variantString;
             m_currentDir = Path.GetDirectoryName(filePath);
 
             string text = File.ReadAllText(filePath);
@@ -245,7 +246,12 @@ namespace QRBuild.ProjectSystem
                     return finalValue;
                 }
                 else {
-                    throw new InvalidDataException();
+                    throw new InvalidDataException(
+                        String.Format(
+                            "Could not resolve name {0}.",
+                            token.Value
+                        )
+                    );
                 }
             }
             else {
@@ -302,7 +308,8 @@ namespace QRBuild.ProjectSystem
             else if (usingType.Value == "project") {
                 Token target = tokens[2];
                 string projectFileName = ResolveTokenToString(target);
-                Assembly assembly = ProjectManager.LoadProjectFile(projectFileName, BuildVariant);
+                string projectFilePath = QRPath.GetAbsolutePath(projectFileName, m_currentDir);
+                Assembly assembly = ProjectManager.LoadProjectFile(projectFilePath, VariantString);
                 m_usingAssemblies.Add(assembly);
             }
             else {

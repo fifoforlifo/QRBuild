@@ -54,7 +54,6 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
-    <Compile Include="ProjectSystem\PrimaryBuildVariantAttribute.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />
     <Compile Include="ProjectSystem\ProjectLocations.cs" />
@@ -101,9 +100,6 @@
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
-	<Copy SourceFiles="$(ProjectDir)$(OutDir)$(TargetName)$(TargetExt)"
-	      DestinationFiles="$(ProjectDir)$(OutDir)qr.exe"
-		  SkipUnchangedFiles="true"
-		  />
+    <Copy SourceFiles="$(ProjectDir)$(OutDir)$(TargetName)$(TargetExt)" DestinationFiles="$(ProjectDir)$(OutDir)qr.exe" SkipUnchangedFiles="true" />
   </Target>
 </Project>
