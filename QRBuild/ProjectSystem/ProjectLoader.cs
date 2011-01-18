@@ -25,19 +25,12 @@ namespace QRBuild.ProjectSystem
             get; private set;
         }
 
-        public string VariantString
-        {
-            get; private set;
-        }
-
         /// filePath must be an absolute path
         public ProjectLoader(
             ProjectManager projectManager,
-            string variantString,
             string filePath)
         {
             ProjectManager = projectManager;
-            VariantString = variantString;
             m_currentDir = Path.GetDirectoryName(filePath);
 
             string text = File.ReadAllText(filePath);
@@ -309,7 +302,7 @@ namespace QRBuild.ProjectSystem
                 Token target = tokens[2];
                 string projectFileName = ResolveTokenToString(target);
                 string projectFilePath = QRPath.GetAbsolutePath(projectFileName, m_currentDir);
-                Assembly assembly = ProjectManager.LoadProjectFile(projectFilePath, VariantString);
+                Assembly assembly = ProjectManager.LoadProjectFile(projectFilePath);
                 m_usingAssemblies.Add(assembly);
             }
             else {

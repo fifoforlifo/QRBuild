@@ -67,15 +67,15 @@ namespace QRBuild.ProjectSystem
             return projects;
         }
 
-        internal Assembly LoadProjectFile(string filePath, string variantString)
+        /// filePath is assumed to be canonicalized
+        internal Assembly LoadProjectFile(string filePath)
         {
             if (!File.Exists(filePath)) {
                 throw new FileNotFoundException("Project file does not exist on disk.", filePath);
             }
 
-            ProjectAssemblyKey newKey = new ProjectAssemblyKey(filePath, variantString);
             Assembly assembly;
-            if (m_projectAssemblies.TryGetValue(newKey, out assembly)) {
+            if (m_projectAssemblies.TryGetValue(filePath, out assembly)) {
                 if (assembly == null) {
                     // TODO: track enough info to print the reference chain
                     throw new InvalidOperationException("Circular reference detected between projects.");
@@ -85,10 +85,10 @@ namespace QRBuild.ProjectSystem
 
             // Place a marker that indicates we have started processing the assembly.
             // (this is the counter-part to the null-check above for detecting circular references)
-            m_projectAssemblies[newKey] = null;
+            m_projectAssemblies[filePath] = null;
 
-            ProjectLoader loader = new ProjectLoader(this, variantString, filePath);
-            m_projectAssemblies[newKey] = loader.Assembly;
+            ProjectLoader loader = new ProjectLoader(this, filePath);
+            m_projectAssemblies[filePath] = loader.Assembly;
             return loader.Assembly;
         }
 
@@ -158,27 +158,6 @@ namespace QRBuild.ProjectSystem
             return files;
         }
 
-        class ProjectAssemblyKey : IComparable<ProjectAssemblyKey>
-        {
-            public ProjectAssemblyKey(string path, string variantString)
-            {
-                Path = path;
-                VariantString = variantString;
-            }
-
-            public int CompareTo(ProjectAssemblyKey rhs)
-            {
-                int pathDiff = Path.CompareTo(rhs.Path);
-                if (pathDiff != 0) {
-                    return pathDiff;
-                }
-                return VariantString.CompareTo(rhs.VariantString);
-            }
-
-            public readonly string Path;
-            public readonly string VariantString;
-        }
-
         class ProjectKey : IComparable<ProjectKey>
         {
             public ProjectKey(Type type, BuildVariant variant)
@@ -203,8 +182,8 @@ namespace QRBuild.ProjectSystem
         private readonly Dictionary<string, Target> m_targets =
             new Dictionary<string, Target>();
 
-        private readonly Dictionary<ProjectAssemblyKey, Assembly> m_projectAssemblies =
-            new Dictionary<ProjectAssemblyKey, Assembly>();
+        private readonly Dictionary<string, Assembly> m_projectAssemblies =
+            new Dictionary<string, Assembly>();
 
         private readonly Dictionary<ProjectKey, Project> m_projects =
             new Dictionary<ProjectKey, Project>();

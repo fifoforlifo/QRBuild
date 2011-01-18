@@ -81,7 +81,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
             }
 
             ProjectManager projectManager = new ProjectManager();
-            Assembly assembly = projectManager.LoadProjectFile(ProjectFile, VariantString);
+            Assembly assembly = projectManager.LoadProjectFile(ProjectFile);
             HashSet<Project> projects = projectManager.AddAllProjectsInAssembly(assembly, VariantString);
 
             BuildOptions options = new BuildOptions();
