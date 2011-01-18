@@ -56,6 +56,10 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                     VariantString = args[i];
                     continue;
                 }
+                if (args[i][0] == '-') {
+                    Console.WriteLine("Unknown option '{0}'.", args[i]);
+                    return false;
+                }
 
                 // default:
                 Targets.Add(args[i]);
@@ -80,12 +84,20 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                 return -1;
             }
 
+            if (!File.Exists(ProjectFile)) {
+                Console.WriteLine("Error: file not found:");
+                Console.WriteLine("    {0}", ProjectFile);
+                return -1;
+            }
+
             ProjectManager projectManager = new ProjectManager();
-            Assembly assembly = projectManager.LoadProjectFile(ProjectFile);
+            Assembly assembly = projectManager.LoadProjectFile(ProjectFile, false);
+
             HashSet<Project> projects = projectManager.AddAllProjectsInAssembly(assembly, VariantString);
 
             BuildOptions options = new BuildOptions();
             options.FileDecider = new FileSizeDateDecider();
+            ModifyOptions(options);
 
             HashSet<string> targetFiles;
             if (Targets.Count == 0) {
@@ -106,7 +118,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
             return results.Success ? 0 : -1;
         }
 
-        private static string FindDefaultProjectFile()
+        internal static string FindDefaultProjectFile()
         {
             string currentDir = Directory.GetCurrentDirectory();
             string[] files = Directory.GetFiles(currentDir, "*.qr");
@@ -147,6 +159,10 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         protected abstract BuildAction BuildAction
         {
             get;
+        }
+
+        protected virtual void ModifyOptions(BuildOptions options)
+        {
         }
 
         protected string VariantString = "";

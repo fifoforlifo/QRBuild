@@ -257,13 +257,13 @@ namespace QRBuild
             }
             else if (m_buildAction == BuildAction.Clean) {
                 foreach (var output in buildNode.Translation.ExplicitOutputs) {
-                    QRFile.Delete(output);
+                    RemoveFile(output);
                 }
                 HashSet<string> intermediateBuildFiles = buildNode.Translation.GetIntermediateBuildFiles();
                 foreach (var output in intermediateBuildFiles) {
-                    QRFile.Delete(output);
+                    RemoveFile(output);
                 }
-                QRFile.Delete(buildNode.Translation.DepsCacheFilePath);
+                RemoveFile(buildNode.Translation.DepsCacheFilePath);
                 workItem.ReturnedStatus = BuildStatus.ExecuteSucceeded;
             }
             
@@ -275,6 +275,14 @@ namespace QRBuild
             lock (m_returnListMutex) {
                 m_returnList.Enqueue(workItem);
                 Monitor.Pulse(m_returnListMutex);
+            }
+        }
+
+        private void RemoveFile(string path)
+        {
+            QRFile.Delete(path);
+            if (m_buildOptions.RemoveEmptyDirectories) {
+                QRDirectory.RemoveEmptyDirectories(path);
             }
         }
 

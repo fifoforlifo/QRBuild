@@ -334,6 +334,15 @@ ENDLOCAL
 
         static void Main(string[] args)
         {
+            string dir = @"C:\one\two\three\four\";
+            string dir4 = Path.GetDirectoryName(dir);
+            string dir3 = Path.GetDirectoryName(dir4);
+            string dir2 = Path.GetDirectoryName(dir3);
+            string dir1 = Path.GetDirectoryName(dir2);
+            string dir0 = Path.GetDirectoryName(dir1);
+            string dirX = Path.GetDirectoryName(dir0);
+
+
 #if false
             TestCscCompile();
 

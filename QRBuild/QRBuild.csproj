@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\QRDirectory.cs" />
     <Compile Include="IO\QRFile.cs" />
     <Compile Include="ProjectSystem\BuildVariant.cs" />
     <Compile Include="ProjectSystem\BuildVariantElementInfo.cs" />
@@ -54,7 +55,9 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerBuild.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerClobber.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerProject.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerWipe.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />
     <Compile Include="ProjectSystem\ProjectLocations.cs" />

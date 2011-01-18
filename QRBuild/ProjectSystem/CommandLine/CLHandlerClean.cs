@@ -8,7 +8,7 @@
         }
         public override string ShortHelp
         {
-            get { return "Incremental clean."; }
+            get { return "Delete all built files, do not remove directories."; }
         }
 
         protected override BuildAction BuildAction

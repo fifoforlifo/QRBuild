@@ -10,6 +10,25 @@ namespace QRBuild.ProjectSystem
 {
     internal class ProjectLoader
     {
+        /// filePath must be an absolute path
+        public ProjectLoader(
+            ProjectManager projectManager,
+            string filePath,
+            bool wipe)
+        {
+            ProjectManager = projectManager;
+            m_currentDir = Path.GetDirectoryName(filePath);
+            m_outputDir = m_currentDir;
+            m_wipe = wipe;
+
+            string text = File.ReadAllText(filePath);
+            ProcessText(text);
+            string assemblyFilePath = CompileOrClean(filePath);
+            if (!wipe) {
+                Assembly = TryLoadAssembly(assemblyFilePath);
+            }
+        }
+
         public Assembly Assembly
         {
             get; private set;
@@ -23,21 +42,6 @@ namespace QRBuild.ProjectSystem
         public ProjectManager ProjectManager
         {
             get; private set;
-        }
-
-        /// filePath must be an absolute path
-        public ProjectLoader(
-            ProjectManager projectManager,
-            string filePath)
-        {
-            ProjectManager = projectManager;
-            m_currentDir = Path.GetDirectoryName(filePath);
-
-            string text = File.ReadAllText(filePath);
-            ProcessText(text);
-            string assemblyFilePath = Compile(filePath);
-
-            Assembly = TryLoadAssembly(assemblyFilePath);
         }
 
         private void ProcessText(string text)
@@ -55,27 +59,37 @@ namespace QRBuild.ProjectSystem
             }
         }
 
-        private string Compile(string filePath)
+        private string CompileOrClean(string filePath)
         {
             BuildGraph buildGraph = new BuildGraph();
             var cscp = new CSharpCompileParams();
             cscp.BuildFileDir = m_currentDir + "\\build";
             cscp.Sources.Add(filePath);
-            cscp.OutputFilePath = filePath + ".dll";
+            cscp.OutputFilePath =
+                Path.Combine(m_outputDir, Path.GetFileName(filePath)) + ".dll";
             cscp.TargetFormat = CSharpTargetFormats.Library;
             cscp.FrameworkVersion = CSharpFrameworkVersion.V3_5;
             cscp.CompileDir = m_currentDir;
             cscp.Debug = true;
             cscp.Platform = CSharpPlatforms.AnyCpu;
             foreach (Assembly assembly in UsingAssemblies) {
-                cscp.AssemblyReferences.Add(assembly.Location);
+                if (assembly != null) {
+                    cscp.AssemblyReferences.Add(assembly.Location);
+                }
             }
             var csc = new CSharpCompile(buildGraph, cscp);
 
             BuildOptions options = new BuildOptions();
             options.FileDecider = new FileSizeDateDecider();
+            options.RemoveEmptyDirectories = true;
+
             var targets = new [] { cscp.OutputFilePath };
-            BuildResults results = buildGraph.Execute(BuildAction.Build, options, targets, true);
+            BuildAction buildAction = m_wipe ? BuildAction.Clean : BuildAction.Build;
+            BuildResults results = buildGraph.Execute(
+                buildAction,
+                options,
+                targets,
+                true);
 
             if (!results.Success) {
                 throw new InvalidOperationException();
@@ -216,6 +230,9 @@ namespace QRBuild.ProjectSystem
                     case "using":
                         Using(tokens);
                         break;
+                    case "outdir":
+                        OutDir(tokens);
+                        break;
                     default:
                         throw new InvalidDataException("Invalid command.");
                 }
@@ -302,12 +319,21 @@ namespace QRBuild.ProjectSystem
                 Token target = tokens[2];
                 string projectFileName = ResolveTokenToString(target);
                 string projectFilePath = QRPath.GetAbsolutePath(projectFileName, m_currentDir);
-                Assembly assembly = ProjectManager.LoadProjectFile(projectFilePath);
+                Assembly assembly = ProjectManager.LoadProjectFile(projectFilePath, m_wipe);
                 m_usingAssemblies.Add(assembly);
             }
             else {
                 throw new InvalidDataException();
             }
+        }
+
+        private void OutDir(List<Token> tokens)
+        {
+            if (tokens.Count < 2) {
+                throw new InvalidDataException();
+            }
+
+            m_outputDir = ResolveTokenToString(tokens[1]);
         }
 
         private static Assembly TryLoadAssembly(string name)
@@ -336,5 +362,11 @@ namespace QRBuild.ProjectSystem
 
         /// Current directory to use when computing file paths.
         private readonly string m_currentDir;
+
+        /// Contains the directory where the compiled Assembly will be located.
+        private string m_outputDir;
+
+        /// True if this class instance is used for cleaning project compilations.
+        private bool m_wipe;
     }
 }

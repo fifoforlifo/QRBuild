@@ -17,7 +17,7 @@ namespace QRBuild.Translations.ToolChain.MsCsc
             if (String.IsNullOrEmpty(p.CompileDir)) {
                 throw new InvalidOperationException("C# CompileDir not specified");
             }
-            o.CompileDir = p.CompileDir;
+            o.CompileDir = QRPath.GetCanonical(p.CompileDir);
             o.BuildFileDir = String.IsNullOrEmpty(p.BuildFileDir)
                 ? p.CompileDir
                 : QRPath.GetCanonical(p.BuildFileDir);
@@ -65,7 +65,9 @@ namespace QRBuild.Translations.ToolChain.MsCsc
             //-- Advanced
             o.MainType = p.MainType;
             o.FullPaths = p.FullPaths;
-            o.PdbFilePath = p.PdbFilePath;
+            if (p.Debug) {
+                o.PdbFilePath = QRPath.ComputeDefaultFilePath(p.PdbFilePath, o.OutputFilePath, ".pdb", o.CompileDir);
+            }
             o.ModuleAssemblyName = p.ModuleAssemblyName;
             return o;
         }
@@ -137,7 +139,7 @@ namespace QRBuild.Translations.ToolChain.MsCsc
             }
             if (!String.IsNullOrEmpty(p.PdbFilePath)) 
             {
-                b.AppendFormat("/pdb:\"{0}\"", p.PdbFilePath);
+                b.AppendFormat("/pdb:\"{0}\" ", p.PdbFilePath);
             }
             if (!String.IsNullOrEmpty(p.ModuleAssemblyName)) 
             {

@@ -64,13 +64,6 @@ namespace QRBuild.IO
             }
         }
 
-        public static void EnsureDirectoryExistsForFile(string filePath)
-        {
-            string dir = Path.GetDirectoryName(filePath);
-            // TODO: CreateDirectory() is apparently buggy w.r.t. security
-            Directory.CreateDirectory(dir);
-        }
-
         public static void AddRangeAsAbsolutePaths(this ICollection<string> dest, IEnumerable<string> src, string currentDir)
         {
             foreach (string path in src) {

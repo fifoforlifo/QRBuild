@@ -68,7 +68,7 @@ namespace QRBuild.ProjectSystem
         }
 
         /// filePath is assumed to be canonicalized
-        internal Assembly LoadProjectFile(string filePath)
+        internal Assembly LoadProjectFile(string filePath, bool wipe)
         {
             if (!File.Exists(filePath)) {
                 throw new FileNotFoundException("Project file does not exist on disk.", filePath);
@@ -76,7 +76,7 @@ namespace QRBuild.ProjectSystem
 
             Assembly assembly;
             if (m_projectAssemblies.TryGetValue(filePath, out assembly)) {
-                if (assembly == null) {
+                if (assembly == null && !wipe) {
                     // TODO: track enough info to print the reference chain
                     throw new InvalidOperationException("Circular reference detected between projects.");
                 }
@@ -87,7 +87,7 @@ namespace QRBuild.ProjectSystem
             // (this is the counter-part to the null-check above for detecting circular references)
             m_projectAssemblies[filePath] = null;
 
-            ProjectLoader loader = new ProjectLoader(this, filePath);
+            ProjectLoader loader = new ProjectLoader(this, filePath, wipe);
             m_projectAssemblies[filePath] = loader.Assembly;
             return loader.Assembly;
         }

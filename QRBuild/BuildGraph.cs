@@ -218,7 +218,7 @@ namespace QRBuild
                 //  TODO: parallelize deps cache file loading, or else we are I/O bound here
                 //  depsCache file opened for exclusive access here.  We could also roll UpdateExplicitIO()
                 //  into the parallel initialization, since each BuildNode is independent.
-                QRPath.EnsureDirectoryExistsForFile(translation.DepsCacheFilePath);
+                QRDirectory.EnsureDirectoryExistsForFile(translation.DepsCacheFilePath);
                 using (FileStream depsCacheFileStream = new FileStream(translation.DepsCacheFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
                     string prevDepsCacheFileContents = QRFileStream.ReadAllText(depsCacheFileStream);
                     DependencyCache.LoadImplicitInputs(prevDepsCacheFileContents, translation.ImplicitInputs);
