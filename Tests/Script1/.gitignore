@@ -1,6 +1,7 @@
 *.dll
 *.pdb
 *.obj
+*.exe
 env.qh
 bin/**/*
 obj/**/*
