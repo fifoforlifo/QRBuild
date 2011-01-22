@@ -53,6 +53,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             o.OmitFramePointers = p.OmitFramePointers;
 
             //-- Code Generation
+            o.EnableMinimalRebuild = p.EnableMinimalRebuild;
             o.EnableStringPooling = p.EnableStringPooling;
             o.CppExceptions = p.CppExceptions;
             o.ExternCNoThrow = p.ExternCNoThrow;
@@ -197,6 +198,9 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
 
             //-- Code Generation
+            if (p.EnableMinimalRebuild) {
+                b.Append("/Gm ");
+            }
             if (p.EnableStringPooling) {
                 b.Append("/GF ");
             }

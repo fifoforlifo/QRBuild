@@ -157,6 +157,10 @@ EXIT %ERRORLEVEL%
                 string pchFilePath = QRPath.ComputeDefaultFilePath(m_params.CreatePchFilePath, m_params.SourceFile, ".pch", m_params.CompileDir);
                 outputs.Add(pchFilePath);
             }
+            if (m_params.EnableMinimalRebuild) {
+                string idbFilePath = QRPath.ChangeExtension(m_params.PdbPath, ".idb");
+                outputs.Add(idbFilePath);
+            }
         }
 
         protected override bool ComputeImplicitIO(HashSet<string> inputs)

@@ -64,6 +64,8 @@ namespace Build
             ccp.VcBinDir = Config.VcBinDir;
             // TODO: use Variant to decide architecture
             ccp.ToolChain = MsvcToolChain.ToolsX86TargetX86;
+            ccp.EnableMinimalRebuild = true;
+            ccp.DebugInfoFormat = MsvcDebugInfoFormat.Normal;
 
             // create the Translation to do the work
             var cc = new MsvcCompile(ProjectManager.BuildGraph, ccp);

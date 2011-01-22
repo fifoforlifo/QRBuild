@@ -143,6 +143,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
         public bool OmitFramePointers;
 
         //-- Code Generation
+        /// /Gm
+        public bool EnableMinimalRebuild;
         public bool EnableStringPooling;
         public MsvcCppExceptions CppExceptions;
         public bool ExternCNoThrow;
