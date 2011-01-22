@@ -1,4 +1,4 @@
 int a()
 {
-	return 5;
+	return 'a';
 }

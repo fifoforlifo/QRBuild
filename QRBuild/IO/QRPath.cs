@@ -72,6 +72,16 @@ namespace QRBuild.IO
             }
         }
 
+        public static string FindFileWithExt(IEnumerable<string> paths, string extension)
+        {
+            foreach (string path in paths) {
+                if (Path.GetExtension(path) == extension) {
+                    return path;
+                }
+            }
+            return null;
+        }
+
         public static string GetAssemblyFilePath(Type type)
         {
             return Assembly.GetAssembly(type).Location;

@@ -98,6 +98,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
         public bool Incremental = true;
         /// /NOASSEMBLY
         public bool NoAssembly;
+        /// /NOLOGO
+        public bool NoLogo = true;
         /// /NXCOMPAT:
         public bool NxCompat;
         /// /OPT:REF

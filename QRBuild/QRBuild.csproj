@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8449AAC7-39A7-419A-B470-9DC457360947}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -90,6 +90,9 @@
     <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileParams.cs" />
     <Compile Include="Translations\ToolChain\MsCsc\CSharpCompileExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLib.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLibExtensions.cs" />
+    <Compile Include="Translations\ToolChain\Msvc\MsvcLibParams.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcLink.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerExtensions.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcLinkerParams.cs" />

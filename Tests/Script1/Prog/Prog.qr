@@ -29,9 +29,7 @@ namespace Build
             // TODO: use Variant to decide output directory
             lp.BuildFileDir = ProjectDir + "\\built";
             lp.Inputs.Add(cc.Params.ObjectPath);
-            foreach (var mcc in libA.ObjectFiles) {
-                lp.Inputs.Add(mcc.ObjectPath);
-            }
+            lp.Inputs.Add(libA.LibFilePath);
             lp.Inputs.Add(Config.PlatformSdkDir + @"\lib\kernel32.lib");
             lp.Inputs.Add(Config.PlatformSdkDir + @"\lib\user32.lib");
             var link = new MsvcLink(ProjectManager.BuildGraph, lp);

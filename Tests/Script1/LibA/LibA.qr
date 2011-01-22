@@ -18,8 +18,20 @@ namespace Build
             PublicIncludeDirs.Add(Path.GetDirectoryName(Locations.S.LibA));
 
             var cc_a = CompileOne("a.cpp");
-            ObjectFiles.Add(cc_a.Params);
-            DefaultTarget.Targets.Add(cc_a.Params.ObjectPath);
+            var cc_b = CompileOne("b.cpp");
+
+            MsvcLibParams lp = new MsvcLibParams();
+            lp.VcBinDir = Config.VcBinDir;
+            lp.CompileDir = ProjectDir;
+            // TODO: use Variant to decide output directory
+            lp.BuildFileDir = ProjectDir + "\\built";
+            lp.Inputs.Add(cc_a.Params.ObjectPath);
+            lp.Inputs.Add(cc_b.Params.ObjectPath);
+            lp.OutputFilePath = "liba.lib";
+            var lib = new MsvcLib(ProjectManager.BuildGraph, lp);
+
+            m_outputLib = lib.Params.OutputFilePath;
+            DefaultTarget.Targets.Add(m_outputLib);
         }
 
         public override Target DefaultTarget
@@ -31,8 +43,10 @@ namespace Build
             }
         }
 
-        public readonly HashSet<MsvcCompileParams> ObjectFiles =
-            new HashSet<MsvcCompileParams>();
+        public string LibFilePath
+        {
+            get { return m_outputLib; }
+        }
 
         public List<string> PublicIncludeDirs = new List<string>();
 
@@ -57,5 +71,6 @@ namespace Build
         }
 
         private static readonly string DefaultTargetName = "liba";
+        private string m_outputLib;
     }
 }

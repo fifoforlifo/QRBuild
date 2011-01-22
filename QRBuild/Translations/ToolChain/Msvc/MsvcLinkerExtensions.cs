@@ -9,16 +9,6 @@ namespace QRBuild.Translations.ToolChain.Msvc
 {
     public static class MsvcLinkerExtensions
     {
-        private static string FindFileWithExt(IEnumerable<string> paths, string extension)
-        {
-            foreach (string path in paths) {
-                if (Path.GetExtension(path) == extension) {
-                    return path;
-                }
-            }
-            return null;
-        }
-        
         public static MsvcLinkerParams Canonicalize(this MsvcLinkerParams p)
         {
             MsvcLinkerParams o = new MsvcLinkerParams();
@@ -67,7 +57,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
                 o.OutputFilePath = QRPath.GetAbsolutePath(p.OutputFilePath, o.CompileDir);
             }
             else {
-                string firstObj = FindFileWithExt(o.Inputs, ".obj");
+                string firstObj = QRPath.FindFileWithExt(o.Inputs, ".obj");
                 string newExtension = p.Dll ? ".dll" : ".exe";
                 o.OutputFilePath = QRPath.ChangeExtension(firstObj, newExtension);
             }
@@ -76,7 +66,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             else {
                 if (p.Debug) {
-                    string firstObj = FindFileWithExt(o.Inputs, ".obj");
+                    string firstObj = QRPath.FindFileWithExt(o.Inputs, ".obj");
                     o.OutputFilePath = QRPath.ChangeExtension(firstObj, ".pdb");
                 }
             }
@@ -85,7 +75,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             else {
                 if (p.Dll) {
-                    string firstObj = FindFileWithExt(o.Inputs, ".obj");
+                    string firstObj = QRPath.FindFileWithExt(o.Inputs, ".obj");
                     o.OutputFilePath = QRPath.ChangeExtension(firstObj, ".lib");
                 }
             }
@@ -107,6 +97,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             o.Incremental = p.Incremental;
             o.NoAssembly = p.NoAssembly;
+            o.NoLogo = p.NoLogo;
             o.NxCompat = p.NxCompat;
             o.OptRef = p.OptRef;
             o.Stack = p.Stack;
@@ -198,6 +189,9 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             if (p.NoAssembly) {
                 b.Append("/NOASSEMBLY ");
+            }
+            if (p.NoLogo) {
+                b.Append("/NOLOGO ");
             }
             b.AppendFormat("/NXCOMPAT{0} ", p.NxCompat ? "" : ":NO");
             if (p.OptRef == MsvcOptRef.OptRef) {
