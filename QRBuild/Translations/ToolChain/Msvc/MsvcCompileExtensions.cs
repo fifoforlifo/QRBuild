@@ -43,6 +43,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
                 o.AsmOutputPath = QRPath.ComputeDefaultFilePath(p.AsmOutputPath, p.SourceFile, ".asm", o.CompileDir);
             }
             o.ClrSupport = p.ClrSupport;
+            o.NoLogo = p.NoLogo;
             o.ExtraArgs = p.ExtraArgs;
 
             //-- Optimization
@@ -93,7 +94,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
             o.EnableAllWarnings = p.EnableAllWarnings;
             o.WarnLevel = p.WarnLevel;
             o.TreatWarningsAsErrors = p.TreatWarningsAsErrors;
-            
+            o.SingleLineDiagnostics = p.SingleLineDiagnostics;
+
             if (p.CreatePch) {
                 o.CreatePchFilePath = QRPath.ComputeDefaultFilePath(p.CreatePchFilePath, p.SourceFile, ".pch", o.CompileDir);
             }
@@ -109,7 +111,6 @@ namespace QRBuild.Translations.ToolChain.Msvc
         {
             StringBuilder b = new StringBuilder();
             b.AppendFormat("\"{0}\" ", p.SourceFile);
-            b.Append("/nologo ");   // do not print logo to stdout
             b.Append("/FC ");       // show full path in diagnostic messages
 
             //-- Input and Output Options
@@ -119,8 +120,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             if (!String.IsNullOrEmpty(p.PdbPath)) {
                 b.AppendFormat("/Fd\"{0}\" ", p.PdbPath);
             }
-            switch (p.AsmOutputFormat)
-            {
+            switch (p.AsmOutputFormat) {
                 case MsvcAsmOutputFormat.AsmOnly: 
                     b.Append("/FA ");
                     break;
@@ -137,8 +137,7 @@ namespace QRBuild.Translations.ToolChain.Msvc
             if (!String.IsNullOrEmpty(p.AsmOutputPath)) {
                 b.AppendFormat("/Fa\"{0}\" ", p.AsmOutputPath);
             }
-            switch (p.ClrSupport)
-            {
+            switch (p.ClrSupport) {
                 case MsvcClrSupport.Clr:
                     b.Append("/clr ");
                     break;
@@ -151,6 +150,9 @@ namespace QRBuild.Translations.ToolChain.Msvc
                 case MsvcClrSupport.ClrOldSyntax:
                     b.Append("/clr:oldsyntax ");
                     break;
+            }
+            if (p.NoLogo) {
+                b.Append("/nologo ");
             }
 
             //-- Optimization
@@ -358,6 +360,9 @@ namespace QRBuild.Translations.ToolChain.Msvc
             }
             if (p.TreatWarningsAsErrors) {
                 b.Append("/WX ");
+            }
+            if (p.SingleLineDiagnostics) {
+                b.Append("/WL ");
             }
 
             //-- PreCompiled Headers (PCH)

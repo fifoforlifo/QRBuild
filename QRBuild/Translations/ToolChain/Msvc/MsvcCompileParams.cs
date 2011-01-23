@@ -169,6 +169,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
         public string AsmOutputPath;
         /// /clr*
         public MsvcClrSupport ClrSupport;
+        /// /nologo
+        public bool NoLogo = true;
         public string ExtraArgs;
 
         //-- Optimization
@@ -264,6 +266,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
         public int WarnLevel = 1;
         /// /WX
         public bool TreatWarningsAsErrors;
+        /// /WL
+        public bool SingleLineDiagnostics = true;
 
         //-- PreCompiled Headers (PCH)
         /// /Yc
