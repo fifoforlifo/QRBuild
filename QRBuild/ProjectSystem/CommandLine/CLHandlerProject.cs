@@ -145,7 +145,10 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 
         private static void PrintBuildResults(BuildOptions options, BuildResults buildResults)
         {
-            Console.WriteLine("===================================================");
+            for (int i = 0; i < Console.WindowWidth - 1; i++) {
+                Console.Write("=");
+            }
+            Console.WriteLine("");
             Console.WriteLine("BuildResults.Action                     = {0}", buildResults.Action);
             Console.WriteLine("BuildResults.Success                    = {0}", buildResults.Success);
             Console.WriteLine("BuildResults.TranslationCount           = {0}", buildResults.TranslationCount);

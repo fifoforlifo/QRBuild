@@ -15,7 +15,7 @@ namespace QRBuild
         {
             BuildNode = buildNode;
         }
-        public readonly BuildNode BuildNode;        
+        public readonly BuildNode BuildNode;
         public BuildStatus ReturnedStatus;
     }
     
@@ -181,13 +181,13 @@ namespace QRBuild
                     workItem.BuildNode.Status == BuildStatus.ExecuteFailed) {
                     m_completedNodeCount += 1;
                     m_buildResults.ExecutedCount += 1;
-                    Console.WriteLine("BuildNode Completed : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
+                    Trace.TraceInformation("BuildNode Completed : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
                     NotifyBuildNodeCompletion(workItem.BuildNode);
                 }
                 else if (workItem.BuildNode.Status == BuildStatus.TranslationUpToDate) {
                     m_completedNodeCount += 1;
                     m_buildResults.UpToDateCount += 1;
-                    Console.WriteLine("BuildNode UpToDate  : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
+                    Trace.TraceInformation("BuildNode UpToDate  : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
                     NotifyBuildNodeCompletion(workItem.BuildNode);
                 }
                 else if (workItem.BuildNode.Status == BuildStatus.ImplicitInputsComputed) {
