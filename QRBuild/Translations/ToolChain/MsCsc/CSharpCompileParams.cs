@@ -46,38 +46,55 @@ namespace QRBuild.Translations.ToolChain.MsCsc
         public string BuildFileDir;
         public string FrameworkVersion;
         public string ExtraArgs;
-        
+
         //-- Input Options
         public readonly HashSet<string> Sources = new HashSet<string>();
+        /// /r:
         public readonly HashSet<string> AssemblyReferences = new HashSet<string>();
+        /// /addmodule:
         public readonly HashSet<string> InputModules = new HashSet<string>();
 
         //-- Output Options
+        /// /out:
         public string OutputFilePath;
+        /// /target:
         public string TargetFormat;
+        /// /platform:
         public string Platform;
 
         //-- Code Generation
+        /// /debug
         public bool Debug;
+        /// /optimize
         public bool Optimize;
 
         //-- Errors and Warnings
+        /// /warnaserror
         public bool WarnAsError;
+        /// /warn:
         public int WarnLevel;
         
         //-- Language
+        /// /checked
         public bool Checked;
+        /// /unsafe
         public bool Unsafe;
+        /// /define
         public readonly List<string> Defines = new List<string>();
+        /// /langversion:
         public string LanguageVersion;
 
         //-- Miscellaneous
         public bool NoConfig = false;
 
         //-- Advanced
+        /// /main:
         public string MainType;
+        /// /fullpaths
         public bool FullPaths;
+        /// /pdb:
         public string PdbFilePath;
+        /// /moduleassemblyname:
         public string ModuleAssemblyName;
     }
 }
