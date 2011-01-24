@@ -5,10 +5,10 @@
 #include <vector>
 #include <stdio.h>
 
-typedef struct Bar
+struct Bar
 {
 	int x;
 	float y;
-} Bar;
+};
 
 #endif

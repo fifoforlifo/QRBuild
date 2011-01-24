@@ -24,6 +24,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 "  -j maxproc    Max concurrent processes.\n" +
 "  -v variant    Specify variant string.\n" +
 "  -m name       ModuleName regex that determines what is built.\n" +
+"  -c            Contine on error.\n" +
 "";
             }
         }
@@ -67,6 +68,10 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                     ModuleNameRegex = args[i];
                     continue;
                 }
+                if (args[i] == "-c") {
+                    ContinueOnError = true;
+                    continue;
+                }
                 if (args[i][0] == '-') {
                     Console.WriteLine("Unknown option '{0}'.", args[i]);
                     return false;
@@ -108,6 +113,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 
             BuildOptions buildOptions = new BuildOptions();
             buildOptions.MaxConcurrency = MaxConcurrency;
+            buildOptions.ContinueOnError = ContinueOnError;
             buildOptions.FileDecider = new FileSizeDateDecider();
             buildOptions.ModuleNameRegex = ComputeModuleNameRegex(ModuleNameRegex, projects);
             ModifyOptions(buildOptions);
@@ -219,5 +225,6 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         protected int MaxConcurrency = 1;
         protected List<string> Targets = new List<string>();
         protected string ModuleNameRegex;
+        protected bool ContinueOnError;
     }
 }

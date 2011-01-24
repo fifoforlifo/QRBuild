@@ -161,7 +161,11 @@ namespace QRBuild
             lock (m_returnListMutex) {
                 //  Wait for m_returnList to gain one or more elements.
                 if (m_returnList.Count == 0) {
-                    Monitor.Wait(m_returnListMutex);
+                    while (true) {
+                        if (Monitor.Wait(m_returnListMutex, 100)) {
+                            break;
+                        }
+                    }
                 }
 
                 //  Quickly drain the returnList.
@@ -178,17 +182,13 @@ namespace QRBuild
                 m_pendingNodeCount -= 1;
 
                 //  Update dependent nodes and performance counters.
-                if (workItem.BuildNode.Status == BuildStatus.ExecuteSucceeded ||
-                    workItem.BuildNode.Status == BuildStatus.ExecuteFailed) {
+                if (workItem.BuildNode.Status.Succeeded() ||
+                    workItem.BuildNode.Status.Failed()) {
                     m_completedNodeCount += 1;
                     m_buildResults.ExecutedCount += 1;
-                    Trace.TraceInformation("BuildNode Completed : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
-                    NotifyBuildNodeCompletion(workItem.BuildNode);
-                }
-                else if (workItem.BuildNode.Status == BuildStatus.TranslationUpToDate) {
-                    m_completedNodeCount += 1;
-                    m_buildResults.UpToDateCount += 1;
-                    Trace.TraceInformation("BuildNode UpToDate  : {0}", workItem.BuildNode.Translation.DepsCacheFilePath);
+                    Trace.TraceInformation("BuildNode.Status={0} : {1}",
+                        workItem.BuildNode.Status,
+                        workItem.BuildNode.Translation.DepsCacheFilePath);
                     NotifyBuildNodeCompletion(workItem.BuildNode);
                 }
                 else if (workItem.BuildNode.Status == BuildStatus.ImplicitInputsComputed) {
@@ -247,12 +247,15 @@ namespace QRBuild
                     m_runList.Enqueue(consumer);
                     m_runSet.Add(consumer);
                 }
+                else {
+                    continue;
+                }
             }
         }
 
         private void DoAction(BuildWorkItem workItem)
         {
-            BuildNode buildNode = workItem.BuildNode;            
+            BuildNode buildNode = workItem.BuildNode;
             if (m_buildAction == BuildAction.Build) {
                 workItem.ReturnedStatus = ExecuteOneBuildNode(buildNode);
             }
