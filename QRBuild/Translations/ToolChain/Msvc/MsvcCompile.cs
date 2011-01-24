@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 using QRBuild.IO;
-using QRBuild.Linq;
-using QRBuild.Translations;
 
 namespace QRBuild.Translations.ToolChain.Msvc
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using QRBuild.Linq;
+﻿using System.Collections.Generic;
 
 namespace QRBuild.Translations.ToolChain.MsCsc
 {
@@ -85,7 +83,7 @@ namespace QRBuild.Translations.ToolChain.MsCsc
         public string LanguageVersion;
 
         //-- Miscellaneous
-        public bool NoConfig = false;
+        public bool NoConfig;
 
         //-- Advanced
         /// /main:

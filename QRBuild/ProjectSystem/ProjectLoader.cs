@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
-using System.Text;
 using QRBuild.IO;
 using QRBuild.Translations.ToolChain.MsCsc;
 
@@ -342,7 +341,7 @@ namespace QRBuild.ProjectSystem
                 return typeof(ProjectLoader).Assembly;
             }
 
-            Assembly assembly = null;
+            Assembly assembly;
             if (File.Exists(name)) {
                 assembly = Assembly.LoadFrom(name);
             }

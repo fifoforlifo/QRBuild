@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
 using System.Linq;
-using QRBuild.IO;
 using QRBuild.Linq;
 
 namespace QRBuild.ProjectSystem

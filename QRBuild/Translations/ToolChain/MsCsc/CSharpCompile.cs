@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-
-using QRBuild.IO;
 using QRBuild.Linq;
-using QRBuild.Translations;
 
 namespace QRBuild.Translations.ToolChain.MsCsc
 {

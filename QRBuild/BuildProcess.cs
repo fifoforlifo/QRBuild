@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using QRBuild.IO;
 using QRBuild.Linq;
@@ -361,7 +360,7 @@ namespace QRBuild
                 try {
                     executeSucceeded = buildNode.Translation.Execute();
                 }
-                catch (System.Exception) {
+                catch (Exception) {
                 	//  TODO: log the error
                 }
                 if (!executeSucceeded) {
@@ -449,8 +448,8 @@ namespace QRBuild
         /// m_requiredNodes contains all nodes that must be executed.
         private readonly HashSet<BuildNode> m_requiredNodes = new HashSet<BuildNode>();
 
-        private int m_completedNodeCount = 0;
-        private int m_pendingNodeCount = 0;
+        private int m_completedNodeCount;
+        private int m_pendingNodeCount;
 
         //  The run list contains currently executing nodes.
         private readonly HashSet<BuildNode> m_runSet = new HashSet<BuildNode>();

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using QRBuild.IO;
-using QRBuild.ProjectSystem.CommandLine;
 
 namespace QRBuild.ProjectSystem
 {

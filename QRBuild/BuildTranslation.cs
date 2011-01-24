@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using QRBuild.Linq;
 
 namespace QRBuild
@@ -141,6 +139,5 @@ namespace QRBuild
         private readonly HashSet<string> m_explicitInputs = new HashSet<string>();
         private readonly HashSet<string> m_explicitOutputs = new HashSet<string>();
         private readonly HashSet<string> m_implicitInputs = new HashSet<string>();
-        private readonly HashSet<string> m_implicitOutputs = new HashSet<string>();
     }
 }
