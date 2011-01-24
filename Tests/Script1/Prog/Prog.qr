@@ -11,7 +11,7 @@ using QRBuild.Translations.ToolChain.Msvc;
 namespace Build
 {
     [PrimaryProject(typeof(MainVariant))]
-    public class Prog : Project
+    public class Prog : CommonProject
     {
         protected override void AddToGraph()
         {

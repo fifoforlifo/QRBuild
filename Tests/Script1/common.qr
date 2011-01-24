@@ -61,4 +61,20 @@ namespace Build
         [VariantPart(200)]
         public Architecture Architecture;
     }
+
+    public abstract class CommonProject : Project
+    {
+        public virtual string ProjectDir
+        {
+            get
+            {
+                if (m_projectDir == null) {
+                    m_projectDir = QRPath.GetAssemblyDirectory(GetType());
+                }
+                return m_projectDir;
+            }
+        }
+
+        private string m_projectDir;
+    }
 }

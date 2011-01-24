@@ -1,12 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using QRBuild.IO;
 
 namespace QRBuild.Translations.ToolChain.Msvc
 {
     public static class MsvcUtility
     {
+        private static readonly string ExistingIncludePrefix = "Note: including file:";
+        /// C1083 is the "missing include file" error
+        private static readonly string MissingIncludeError = "fatal error C1083";
+        private static readonly string MissingIncludePrefix = "Cannot open include file: '";
+
         /// Returns a path to the specified toolChain's vcvars32.bat file.
         /// This exists as a general utility, but none of the Msvc* Translation classes
         /// rely on it anymore.
@@ -48,16 +54,10 @@ namespace QRBuild.Translations.ToolChain.Msvc
             IList<string> includesList = new List<string>();
 
             using (StringReader sr = new StringReader(compilerOutput)) {
-                while (true) {
-                    string line = sr.ReadLine();
-                    if (line == null) {
-                        break;
-                    }
-
-                    string existingIncludePrefix = "Note: including file:";
-                    if (line.StartsWith(existingIncludePrefix)) {
+                for (string line = sr.ReadLine(); line != null; line = sr.ReadLine()) {
+                    if (line.StartsWith(ExistingIncludePrefix)) {
                         int pathStart;
-                        for (pathStart = existingIncludePrefix.Length; pathStart < line.Length; pathStart++) {
+                        for (pathStart = ExistingIncludePrefix.Length; pathStart < line.Length; pathStart++) {
                             if (line[pathStart] != ' ') {
                                 break;
                             }
@@ -66,13 +66,12 @@ namespace QRBuild.Translations.ToolChain.Msvc
                         string absPath = QRPath.GetCanonical(path);
                         includesList.Add(absPath);
                     }
-                    else if (line.Contains("fatal error C1083")) {
+                    else if (line.Contains(MissingIncludeError)) {
                         // C1083 is the "missing include file" error
                         // Extract the missing file-name and add it to inputs.
-                        string missingIncludePrefix = "Cannot open include file: '";
-                        int prefixIndex = line.IndexOf(missingIncludePrefix);
+                        int prefixIndex = line.IndexOf(MissingIncludePrefix);
                         if (prefixIndex > 0) {
-                            int fileNameStartIndex = prefixIndex + missingIncludePrefix.Length;
+                            int fileNameStartIndex = prefixIndex + MissingIncludePrefix.Length;
                             int cursor = fileNameStartIndex;
                             for (; cursor < line.Length; cursor++) {
                                 if (line[cursor] == '\'') {
@@ -102,6 +101,20 @@ namespace QRBuild.Translations.ToolChain.Msvc
                 includes.Add(include);
             }
             return !foundError;
+        }
+
+        public static string ExtractErrorLinesFromShowIncludesText(string compilerOutput)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            using (StringReader sr = new StringReader(compilerOutput)) {
+                for (string line = sr.ReadLine(); line != null; line = sr.ReadLine()) {
+                    if (line.Contains("fatal error C")) {
+                        builder.AppendLine(line);
+                    }
+                }
+            }
+            return builder.ToString();
         }
 
         /// Returns path to the specified include file. 

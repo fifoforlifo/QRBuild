@@ -13,21 +13,28 @@ namespace QRBuild.ProjectSystem
             get; internal set;
         }
 
+        public virtual string ModuleName
+        {
+            get { return String.Empty; }
+        }
+
         /// This is set by the ProjectManager when the Project is instantiated.
         public BuildVariant Variant
         {
-            get; internal set;
-        }
-
-        public string ProjectDir
-        {
             get
             {
-                if (m_projectDir == null) {
-                    m_projectDir = QRPath.GetAssemblyDirectory(GetType());
-                }
-                return m_projectDir;
+                return m_variant;
             }
+            internal set
+            {
+                m_variant = value;
+                m_fullVariantString = m_variant.ToVariantString();
+            }
+        }
+
+        public string FullVariantString
+        {
+            get { return m_fullVariantString; }
         }
 
         internal void AddToGraphOnce()
@@ -53,7 +60,8 @@ namespace QRBuild.ProjectSystem
             get;
         }
 
-        private string m_projectDir;
+        private BuildVariant m_variant;
+        private string m_fullVariantString;
         private bool m_addedToGraph;
     }
 }

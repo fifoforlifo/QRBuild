@@ -63,10 +63,10 @@ namespace QRBuild.ProjectSystem
         {
             BuildGraph buildGraph = new BuildGraph();
             var cscp = new CSharpCompileParams();
-            cscp.BuildFileDir = m_currentDir + "\\build";
+            cscp.BuildFileDir = Path.Combine(m_currentDir, m_outputDir);
             cscp.Sources.Add(filePath);
             cscp.OutputFilePath =
-                Path.Combine(m_outputDir, Path.GetFileName(filePath)) + ".dll";
+                Path.Combine(cscp.BuildFileDir, Path.GetFileName(filePath)) + ".dll";
             cscp.TargetFormat = CSharpTargetFormats.Library;
             cscp.FrameworkVersion = CSharpFrameworkVersion.V3_5;
             cscp.CompileDir = m_currentDir;

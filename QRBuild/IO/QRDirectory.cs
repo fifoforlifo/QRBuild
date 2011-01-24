@@ -8,11 +8,16 @@ namespace QRBuild.IO
 {
     public static class QRDirectory
     {
+        public static void EnsureDirectoryExists(string dir)
+        {
+            // TODO: CreateDirectory() is apparently buggy w.r.t. security
+            Directory.CreateDirectory(dir);
+        }
+
         public static void EnsureDirectoryExistsForFile(string filePath)
         {
             string dir = Path.GetDirectoryName(filePath);
-            // TODO: CreateDirectory() is apparently buggy w.r.t. security
-            Directory.CreateDirectory(dir);
+            EnsureDirectoryExists(dir);
         }
 
         public static void RemoveEmptyDirectories(string path)

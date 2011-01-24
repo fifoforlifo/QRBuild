@@ -92,5 +92,21 @@ namespace QRBuild.IO
             string dir = Path.GetDirectoryName(filePath);
             return dir;
         }
+        public static string GetAssemblyDirectory(Type type, int parentCount)
+        {
+            string assemblyDir = GetAssemblyDirectory(type);
+            if (parentCount <= 0) {
+                return assemblyDir;
+            }
+            string parentPath = "..";
+            for (int i = 1; i < parentCount; i++) {
+                parentPath = Path.Combine(parentPath, "..");
+            }
+
+            string dir = GetCanonical(
+                Path.Combine(assemblyDir, parentPath)
+            );
+            return dir;
+        }
     }
 }

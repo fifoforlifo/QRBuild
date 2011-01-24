@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="IO\QRDirectory.cs" />
     <Compile Include="IO\QRFile.cs" />
+    <Compile Include="IO\QRSystem.cs" />
     <Compile Include="ProjectSystem\BuildVariant.cs" />
     <Compile Include="ProjectSystem\BuildVariantElementInfo.cs" />
     <Compile Include="ProjectSystem\BuildVariantExtensions.cs" />

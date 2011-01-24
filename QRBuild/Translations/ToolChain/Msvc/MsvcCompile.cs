@@ -25,6 +25,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
 
         public override bool Execute()
         {
+            QRDirectory.EnsureDirectoryExists(m_params.BuildFileDir);
+
             string responseFile = m_params.ToArgumentString();
             string responseFilePath = GetResponseFilePath();
             File.WriteAllText(responseFilePath, responseFile);
@@ -169,6 +171,8 @@ EXIT %ERRORLEVEL%
                 return true;
             }
 
+            QRDirectory.EnsureDirectoryExists(m_params.BuildFileDir);
+
             string responseFile = m_params.ToPreProcessorArgumentString(true);
             string responseFilePath = GetPpResponseFilePath();
             File.WriteAllText(responseFilePath, responseFile);
@@ -208,11 +212,18 @@ EXIT /B %ERRORLEVEL%
 
             string showIncludesFileContents = File.ReadAllText(showIncludesFilePath);
             bool ppSuccess = MsvcUtility.ParseShowIncludesText(
-                this.BuildGraph,
+                BuildGraph,
                 showIncludesFileContents,
                 m_params.CompileDir,
                 m_params.IncludeDirs,
                 inputs);
+
+            if (!ppSuccess) {
+                string errors = MsvcUtility.ExtractErrorLinesFromShowIncludesText(showIncludesFileContents);
+                Console.WriteLine(Path.GetFileName(m_params.SourceFile));
+                Console.Write(errors);
+            }
+
             return ppSuccess;
         }
 

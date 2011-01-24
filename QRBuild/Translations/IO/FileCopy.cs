@@ -32,6 +32,8 @@ namespace QRBuild.Translations.IO
 
         public override bool Execute()
         {
+            QRDirectory.EnsureDirectoryExistsForFile(m_destination);
+
             File.Copy(m_source, m_destination, /* overwrite */ true);
             //  TODO: Is it desirable to update the modified time, or is it a
             //  pointless perf hit?

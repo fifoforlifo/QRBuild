@@ -25,6 +25,8 @@ namespace QRBuild.Translations.ToolChain.Msvc
 
         public override bool Execute()
         {
+            QRDirectory.EnsureDirectoryExists(m_params.BuildFileDir);
+
             string responseFile = m_params.ToArgumentString();
             string responseFilePath = GetResponseFilePath();
             File.WriteAllText(responseFilePath, responseFile);

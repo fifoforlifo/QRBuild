@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using QRBuild.IO;
 
 namespace QRBuild.ProjectSystem.CommandLine
@@ -22,6 +23,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 "  -p fname      Load specified project file.\n" +
 "  -j maxproc    Max concurrent processes.\n" +
 "  -v variant    Specify variant string.\n" +
+"  -m name       ModuleName regex that determines what is built.\n" +
 "";
             }
         }
@@ -54,6 +56,15 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                         return false;
                     }
                     VariantString = args[i];
+                    continue;
+                }
+                if (args[i] == "-m") {
+                    i++;
+                    if (i >= args.Length) {
+                        Console.WriteLine("Missing argument to -m");
+                        return false;
+                    }
+                    ModuleNameRegex = args[i];
                     continue;
                 }
                 if (args[i][0] == '-') {
@@ -95,9 +106,11 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 
             HashSet<Project> projects = projectManager.AddAllProjectsInAssembly(assembly, VariantString);
 
-            BuildOptions options = new BuildOptions();
-            options.FileDecider = new FileSizeDateDecider();
-            ModifyOptions(options);
+            BuildOptions buildOptions = new BuildOptions();
+            buildOptions.MaxConcurrency = MaxConcurrency;
+            buildOptions.FileDecider = new FileSizeDateDecider();
+            buildOptions.ModuleNameRegex = ComputeModuleNameRegex(ModuleNameRegex, projects);
+            ModifyOptions(buildOptions);
 
             HashSet<string> targetFiles;
             if (Targets.Count == 0) {
@@ -110,11 +123,11 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 
             BuildResults results = projectManager.BuildGraph.Execute(
                 BuildAction,
-                options,
+                buildOptions,
                 targetFiles,
                 true);
 
-            PrintBuildResults(options, results);
+            PrintBuildResults(buildOptions, results);
             return results.Success ? 0 : -1;
         }
 
@@ -131,6 +144,11 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                 if (Path.GetFileName(file) == "build.qr") {
                     return file;
                 }
+            }
+
+            if (files.Length == 0) {
+                Console.WriteLine("Error: no project files (*.qr) found in current directory.");
+                return null;
             }
 
             // error - multiple project files to choose from
@@ -168,10 +186,38 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         {
         }
 
+        private static string ComputeModuleNameRegex(
+            string moduleNameRegex,
+            HashSet<Project> projects)
+        {
+            if (moduleNameRegex == ".init") {
+                bool first = true;
+                StringBuilder builder = new StringBuilder();
+                foreach (Project project in projects) {
+                    if (first) {
+                        builder.Append(project.ModuleName);
+                    }
+                    else {
+                        builder.Append("|");
+                        builder.Append(project.ModuleName);
+                    }
+                }
+                return builder.ToString();
+            }
+
+            if (String.IsNullOrEmpty(moduleNameRegex)) {
+                // match everything
+                return ".*";
+            }
+
+            return moduleNameRegex;
+        }
+
         protected string VariantString = "";
         // options
         protected string ProjectFile;
         protected int MaxConcurrency = 1;
         protected List<string> Targets = new List<string>();
+        protected string ModuleNameRegex;
     }
 }

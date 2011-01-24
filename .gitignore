@@ -1,9 +1,11 @@
 *.sln
 *.suo
 *.ncb
+*.user
 **/bin/**/*
 **/obj/**/*
 **/*.user
+_ReSharper*
 Tests/A/*
 Tests/A/**/*
 Tests/B/**/*

@@ -121,7 +121,9 @@ namespace QRBuild
 
             bool completionSuccess = true;
             if (m_runList.Count == 0) {
-                throw new InvalidOperationException("Nothing to build.");
+                // nothing to build
+                Trace.TraceInformation("nothing to build.");
+                return true;
             }
 
             while (m_completedNodeCount < m_requiredNodes.Count) {

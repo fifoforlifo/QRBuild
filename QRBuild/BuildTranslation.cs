@@ -10,8 +10,11 @@ namespace QRBuild
     {
         //-- Public concrete interface
 
-        /// metadata
-        public Dictionary<string, object> MetaData = new Dictionary<string, object>();
+        /// ModuleName can be used as a filter.
+        public string ModuleName
+        {
+            get; set;
+        }
 
         /// The BuildGraph to which this Translation belongs.
         public BuildGraph BuildGraph { get; private set; }
@@ -113,10 +116,10 @@ namespace QRBuild
         /// Constructor to be called by derived classes.
         protected BuildTranslation(BuildGraph buildGraph)
         {
-            if (buildGraph == null) 
-            {
+            if (buildGraph == null) {
                 throw new ArgumentNullException("buildGraph");
             }
+            ModuleName = "";
             BuildNode = new BuildNode(this);
             BuildGraph = buildGraph;
             BuildGraph.Add(this);
