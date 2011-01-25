@@ -1,12 +1,11 @@
 //@ outdir "built";
 //@ using assembly "QRBuild";
-//@ using project  "common.qr";
+//@ using project  "common.qr.cs";
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using QRBuild;
 using QRBuild.IO;
 using QRBuild.ProjectSystem;
 using QRBuild.Translations.IO;
@@ -26,7 +25,7 @@ namespace Build
             var locations = Locations.S.GetLocations();
 
             string dir = QRPath.GetAssemblyDirectory(typeof(Locations), 1);
-            string fnam = "env.qh";
+            string fnam = "env.qh.cs";
             string envqhPath = Path.Combine(dir, fnam);
             // Generate into a "built" subdirectory off of each projects' locations.
             string destRelPath = Path.Combine("built", fnam);
@@ -37,7 +36,7 @@ namespace Build
 
             foreach (var kvp in locations) {
                 // Only generate env.qh for project files (*.qr).
-                if (!kvp.Value.EndsWith(".qr")) {
+                if (!kvp.Value.EndsWith(".qr.cs")) {
                     continue;
                 }
 

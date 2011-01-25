@@ -47,18 +47,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="bootstrap.qr" />
-    <Compile Include="build.qr" />
-    <Compile Include="common.qr" />
+    <Compile Include="bootstrap.qr.cs" />
+    <Compile Include="build.qr.cs" />
+    <Compile Include="common.qr.cs" />
+    <Compile Include="Libs\Bar\bar.qr.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\QRBuild\QRBuild.csproj">
       <Project>{8449AAC7-39A7-419A-B470-9DC457360947}</Project>
       <Name>QRBuild</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Libs\Bar\bar.qr" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Libs\Blah\" />

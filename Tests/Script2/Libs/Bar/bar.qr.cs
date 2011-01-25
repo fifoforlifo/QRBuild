@@ -1,11 +1,9 @@
 //@ outdir "built";
-//@ include "built\env.qh";
+//@ include "built\env.qh.cs";
 //@ using assembly "QRBuild";
 //@ using project  Common;
 
-using System;
 using System.IO;
-using QRBuild;
 using QRBuild.ProjectSystem;
 using QRBuild.Translations.ToolChain.Msvc;
 
@@ -28,7 +26,11 @@ namespace Build
             Compile(@"src\bar4.cpp");
             Compile(@"src\bar5.cpp");
             Compile(@"src\bar6.cpp");
-            Compile(@"src\bar7.cpp");
+            Compile(@"src\bar7.cpp", ccp =>
+                {
+                    ccp.Defines.Add("ENABLE_HACKS=1");
+                    ccp.WarnLevel = 4;
+                });
 
             var lib = Lib(@"bar.lib");
 

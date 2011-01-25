@@ -140,20 +140,20 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         internal static string FindDefaultProjectFile()
         {
             string currentDir = Directory.GetCurrentDirectory();
-            string[] files = Directory.GetFiles(currentDir, "*.qr");
+            string[] files = Directory.GetFiles(currentDir, "*.qr.cs");
             if (files.Length == 1) {
                 return files[0];
             }
 
             // search for a file named "build.qr"
             foreach (string file in files) {
-                if (Path.GetFileName(file) == "build.qr") {
+                if (Path.GetFileName(file) == "build.qr.cs") {
                     return file;
                 }
             }
 
             if (files.Length == 0) {
-                Console.WriteLine("Error: no project files (*.qr) found in current directory.");
+                Console.WriteLine("Error: no project files (*.qr.cs) found in current directory.");
                 return null;
             }
 
@@ -202,6 +202,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                 foreach (Project project in projects) {
                     if (first) {
                         builder.Append(project.ModuleName);
+                        first = false;
                     }
                     else {
                         builder.Append("|");

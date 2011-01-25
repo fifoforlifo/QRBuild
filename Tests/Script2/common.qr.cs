@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using QRBuild;
 using QRBuild.IO;
 using QRBuild.ProjectSystem;
 using QRBuild.Translations.ToolChain.Msvc;
@@ -22,9 +21,9 @@ namespace Build
         public static readonly Locations S;
         private static readonly string dir;
 
-        public readonly string Common = dir + @"\common.qr";
-        public readonly string Bar = dir + @"\Libs\Bar\bar.qr";
-        public readonly string Blah = dir + @"\Libs\Blah\blah.qr";
+        public readonly string Common   = dir + @"\common.qr.cs";
+        public readonly string Bar      = dir + @"\Libs\Bar\bar.qr.cs";
+        public readonly string Blah     = dir + @"\Libs\Blah\blah.qr.cs";
     }
 
     public static class Config
