@@ -10,7 +10,7 @@ using QRBuild.Translations.ToolChain.Msvc;
 namespace Build
 {
     [PrimaryProject(typeof(MainVariant))]
-    public class Prog : CppProject
+    public class Bar : CppProject
     {
         public override string ModuleName
         {

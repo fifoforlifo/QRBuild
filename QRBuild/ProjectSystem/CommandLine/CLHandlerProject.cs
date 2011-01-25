@@ -21,8 +21,8 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 "                project file are processed.\n" +
 "options:\n" +
 "  -p fname      Load specified project file.\n" +
+"  -a variant    Specify variant string.\n" +
 "  -j maxproc    Max concurrent processes.\n" +
-"  -v variant    Specify variant string.\n" +
 "  -m name       ModuleName regex that determines what is built.\n" +
 "  -c            Contine on error.\n" +
 "";
@@ -50,10 +50,10 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                     MaxConcurrency = Int32.Parse(args[i]);
                     continue;
                 }
-                if (args[i] == "-v") {
+                if (args[i] == "-a") {
                     i++;
                     if (i >= args.Length) {
-                        Console.WriteLine("Missing argument to -v");
+                        Console.WriteLine("Missing argument to -a");
                         return false;
                     }
                     VariantString = args[i];
@@ -192,7 +192,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         {
         }
 
-        private static string ComputeModuleNameRegex(
+        internal static string ComputeModuleNameRegex(
             string moduleNameRegex,
             HashSet<Project> projects)
         {

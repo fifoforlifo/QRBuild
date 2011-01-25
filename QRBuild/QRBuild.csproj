@@ -47,6 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildNodeExtensions.cs" />
+    <Compile Include="BuildWorkItem.cs" />
     <Compile Include="IO\QRDirectory.cs" />
     <Compile Include="IO\QRFile.cs" />
     <Compile Include="IO\QRSystem.cs" />
@@ -58,6 +60,7 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClobber.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerProject.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerShow.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerWipe.cs" />
     <Compile Include="ProjectSystem\Project.cs" />
     <Compile Include="ProjectSystem\ProjectLoader.cs" />

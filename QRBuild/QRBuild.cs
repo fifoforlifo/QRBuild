@@ -41,7 +41,9 @@ namespace QRBuild
                         DateTime endTime = DateTime.Now;
 
                         TimeSpan totalTime = endTime - startTime;
+                        Console.WriteLine("");
                         Console.WriteLine("# TotalTime                             = {0}", totalTime);
+                        Console.WriteLine("");
                         return result;
                     }
                 }
@@ -94,6 +96,7 @@ namespace QRBuild
                 new CLHandlerClean(),
                 new CLHandlerClobber(),
                 new CLHandlerWipe(),
+                new CLHandlerShow(),
             };
             Array.Sort(clHandlers);
             return clHandlers.ToList();

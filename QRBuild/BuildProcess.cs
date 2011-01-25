@@ -8,39 +8,56 @@ using QRBuild.Linq;
 
 namespace QRBuild
 {
-    internal class BuildWorkItem
-    {
-        public BuildWorkItem(BuildNode buildNode)
-        {
-            BuildNode = buildNode;
-        }
-        public readonly BuildNode BuildNode;
-        public BuildStatus ReturnedStatus;
-    }
-    
-    internal class BuildProcess
+    internal sealed class BuildProcess
     {
         ///-----------------------------------------------------------------
         /// Public interface
 
-        public BuildProcess(BuildGraph buildGraph, BuildAction buildAction, BuildOptions buildOptions, BuildResults buildResults)
+        public BuildProcess(
+            BuildGraph buildGraph,
+            BuildAction buildAction,
+            BuildOptions buildOptions,
+            BuildResults buildResults,
+            IEnumerable<BuildNode> buildNodes,
+            bool processDependencies)
         {
             m_buildGraph = buildGraph;
             m_buildAction = buildAction;
             m_buildOptions = buildOptions;
             m_buildResults = buildResults;
-        }
 
-        public bool Run(HashSet<BuildNode> buildNodes, bool processDependencies)
-        {
             bool initialized = InitializeBuildProcess(buildNodes, processDependencies);
             if (!initialized) {
-                return false;
+                throw new InvalidOperationException("Failed to initialize BuildProcess.");
             }
+        }
 
-            bool result = Run();
+        public bool Run()
+        {
+            bool result = RunCore();
             m_buildResults.TranslationCount = m_requiredNodes.Count;
             return result;
+        }
+
+        public void GetInputsAndOutputs(
+            IEnumerable<BuildFile> buildFiles,
+            HashSet<string> inputs,
+            HashSet<string> outputs)
+        {
+            foreach (BuildNode buildNode in m_requiredNodes) {
+                foreach (string filePath in buildNode.GetAllInputs()) {
+                    BuildFile buildFile = m_buildGraph.GetBuildFile(filePath);
+                    if (buildFile.BuildNode == null) {
+                        inputs.Add(buildFile.Path);
+                    }
+                }
+                foreach (string filePath in buildNode.GetAllOutputs()) {
+                    BuildFile buildFile = m_buildGraph.GetBuildFile(filePath);
+                    if (buildFile.BuildNode != null) {
+                        outputs.Add(buildFile.Path);
+                    }
+                }
+            }
         }
 
 
@@ -113,7 +130,7 @@ namespace QRBuild
             }
         }
 
-        private bool Run()
+        private bool RunCore()
         {
             m_completedNodeCount = 0;
             m_pendingNodeCount = 0;

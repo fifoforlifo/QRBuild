@@ -172,7 +172,7 @@ namespace Build
         {
             var ccp = CreateCompileParams(sourceFile, overrideParams);
             var cc = new MsvcCompile(ProjectManager.BuildGraph, ccp);
-            cc.ModuleName = ModuleName;
+            cc.ModuleName = ModuleName + ".Compile";
             m_compiles.Add(cc);
             return cc;
         }
@@ -220,7 +220,7 @@ namespace Build
         {
             var lp = CreateLinkerParams(outputName, overrideParams);
             var link = new MsvcLink(ProjectManager.BuildGraph, lp);
-            link.ModuleName = ModuleName;
+            link.ModuleName = ModuleName + ".Link";
             return link;
         }
 
@@ -264,7 +264,7 @@ namespace Build
         {
             var lp = CreateLibParams(outputName, overrideParams);
             var lib = new MsvcLib(ProjectManager.BuildGraph, lp);
-            lib.ModuleName = ModuleName;
+            lib.ModuleName = ModuleName + ".Lib";
             return lib;
         }
 

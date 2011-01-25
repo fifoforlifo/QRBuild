@@ -51,13 +51,17 @@ namespace QRBuild.ProjectSystem
             return result;
         }
 
-        public static string GetVariantStringOptions(this BuildVariant variant)
+        public static string GetVariantStringOptions(
+            this BuildVariant variant,
+            string linePrefix)
         {
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < variant.Elements.Count; i++) {
                 BuildVariantElementInfo elementInfo = variant.Elements[i];
-                builder.AppendFormat("{0}: ", elementInfo.Name);
+                builder.AppendFormat("{0}{1,-20}: ",
+                    linePrefix,
+                    elementInfo.Name);
                 if (elementInfo.ElementType.IsEnum) {
                     // print enum elements
                     builder.Append(" {");
@@ -74,7 +78,7 @@ namespace QRBuild.ProjectSystem
                     // print out the type
                     builder.Append(elementInfo.ElementType.Name);
                 }
-                builder.Append("\n");
+                builder.AppendLine("");
             }
             string result = builder.ToString();
             return result;
