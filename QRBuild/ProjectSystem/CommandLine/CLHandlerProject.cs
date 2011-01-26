@@ -25,6 +25,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 "  -j maxproc    Max concurrent processes.\n" +
 "  -m name       ModuleName regex that determines what is built.\n" +
 "  -c            Contine on error.\n" +
+"  -v verbosity  Verbosity level from 0 - 2.  Default 0, higher prints more." +
 "";
             }
         }
@@ -71,6 +72,23 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
                 if (args[i] == "-c") {
                     ContinueOnError = true;
                     continue;
+                }
+                if (args[i].StartsWith("-v")) {
+                    if (args[i].Length == 3) {
+                        if ('0' <= args[i][2] && args[i][2] <= '9') {
+                            Verbosity = args[i][2] - '0';
+                            continue;
+                        }
+                    }
+                    else {
+                        i++;
+                        if (i >= args.Length) {
+                            Console.WriteLine("Missing argument to -v");
+                            return false;
+                        }
+                        Int32.TryParse(args[i], out Verbosity);
+                        continue;
+                    }
                 }
                 if (args[i][0] == '-') {
                     Console.WriteLine("Unknown option '{0}'.", args[i]);
@@ -183,16 +201,16 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
             Console.WriteLine("# ExecutionTime                         = {0}", executionTime);
         }
 
-        protected abstract BuildAction BuildAction
+        protected virtual BuildAction BuildAction
         {
-            get;
+            get { return BuildAction.Build; }
         }
 
         protected virtual void ModifyOptions(BuildOptions options)
         {
         }
 
-        internal static string ComputeModuleNameRegex(
+        protected static string ComputeModuleNameRegex(
             string moduleNameRegex,
             HashSet<Project> projects)
         {
@@ -227,5 +245,6 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
         protected List<string> Targets = new List<string>();
         protected string ModuleNameRegex;
         protected bool ContinueOnError;
+        protected int Verbosity;
     }
 }

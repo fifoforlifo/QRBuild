@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using QRBuild.IO;
 
 namespace QRBuild.ProjectSystem.CommandLine
@@ -41,7 +40,7 @@ String.Format("usage: qr {0} [options]\n", Name) +
             }
 
             ProjectManager projectManager = new ProjectManager();
-            Assembly assembly = projectManager.LoadProjectFile(ProjectFile, true);
+            projectManager.LoadProjectFile(ProjectFile, true);
 
             return 0;
         }

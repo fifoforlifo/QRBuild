@@ -4,11 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using QRBuild.IO;
 
 namespace QRBuild.ProjectSystem.CommandLine
 {
-    internal class CLHandlerShow : CLHandler
+    internal class CLHandlerShow : CLHandlerProject
     {
         public override string Name
         {
@@ -19,24 +18,7 @@ namespace QRBuild.ProjectSystem.CommandLine
             get { return "Shows info about project and targets to be built."; }
         }
 
-        public override string LongHelp
-        {
-            get
-            {
-                return
-"usage: qr show [options] [targets]\n" +
-"  targets       Space-delimited list of targets to build.\n" +
-"                By default, the DefaultTarget of all projects in the\n" +
-"                project file are processed.\n" +
-"options:\n" +
-"  -p fname      Load specified project file.\n" +
-"  -a variant    Specify variant string.\n" +
-"  -m name       ModuleName regex that determines what is built.\n" +
-"  -v verbosity  Verbosity level from 0 - 2.  Default 0, higher prints more." +
-"";
-            }
-        }
-
+        // Override CLHandlerProject.Execute() with totally different implementation.
         public override int Execute(string[] args)
         {
             bool parseSuccess = ParseArgs(args);
@@ -58,7 +40,7 @@ namespace QRBuild.ProjectSystem.CommandLine
             if (Verbosity >= 0) {
                 Console.WriteLine("");
 
-                string finalRegexString = CLHandlerProject.ComputeModuleNameRegex(
+                string finalRegexString = ComputeModuleNameRegex(
                     ModuleNameRegex, projects);
                 Regex moduleNameRegex = new Regex(finalRegexString);
 
@@ -102,7 +84,7 @@ namespace QRBuild.ProjectSystem.CommandLine
 
             BuildOptions buildOptions = new BuildOptions();
             buildOptions.FileDecider = new FileSizeDateDecider();
-            buildOptions.ModuleNameRegex = CLHandlerProject.ComputeModuleNameRegex(
+            buildOptions.ModuleNameRegex = ComputeModuleNameRegex(
                 ModuleNameRegex, projects);
 
             HashSet<string> targetPaths;
@@ -147,71 +129,5 @@ namespace QRBuild.ProjectSystem.CommandLine
             return 0;
         }
 
-        protected bool ParseArgs(string[] args)
-        {
-            for (int i = 1; i < args.Length; i++) {
-                if (args[i] == "-p") {
-                    i++;
-                    if (i >= args.Length) {
-                        Console.WriteLine("Missing argument to -p");
-                        return false;
-                    }
-                    ProjectFile = args[i];
-                    continue;
-                }
-                if (args[i] == "-a") {
-                    i++;
-                    if (i >= args.Length) {
-                        Console.WriteLine("Missing argument to -a");
-                        return false;
-                    }
-                    VariantString = args[i];
-                    continue;
-                }
-                if (args[i] == "-m") {
-                    i++;
-                    if (i >= args.Length) {
-                        Console.WriteLine("Missing argument to -m");
-                        return false;
-                    }
-                    ModuleNameRegex = args[i];
-                    continue;
-                }
-                if (args[i] == "-v") {
-                    i++;
-                    if (i >= args.Length) {
-                        Console.WriteLine("Missing argument to -v");
-                        return false;
-                    }
-                    Int32.TryParse(args[i], out Verbosity);
-                    continue;
-                }
-                if (args[i][0] == '-') {
-                    Console.WriteLine("Unknown option '{0}'.", args[i]);
-                    return false;
-                }
-
-                // default:
-                Targets.Add(args[i]);
-            }
-
-            // Set defaults for any unset options.
-            if (ProjectFile == null) {
-                ProjectFile = CLHandlerProject.FindDefaultProjectFile();
-                if (ProjectFile == null) {
-                    return false;
-                }
-            }
-            ProjectFile = QRPath.GetAbsolutePath(ProjectFile, Directory.GetCurrentDirectory());
-
-            return true;
-        }
-
-        protected string VariantString = "";
-        // options
-        protected string ProjectFile;
-        protected List<string> Targets = new List<string>();
-        protected string ModuleNameRegex;
-        protected int Verbosity;
     }
 }
