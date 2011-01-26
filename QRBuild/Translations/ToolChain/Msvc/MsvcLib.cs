@@ -141,6 +141,13 @@ EXIT %ERRORLEVEL%
 
         protected override bool ComputeImplicitIO(HashSet<string> inputs)
         {
+            foreach (string path in ExplicitInputs) {
+                if (path.EndsWith(".obj")) {
+                    string pdbPath = path.Substring(0, path.Length - 4) + ".pdb";
+                    inputs.Add(pdbPath);
+                }
+                // TODO: not sure how pdbs and .lib inputs work
+            }
             return true;
         }
 

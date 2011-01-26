@@ -14,7 +14,7 @@ namespace Build
     {
         public override string ModuleName
         {
-            get { return "Lib.Bar"; }
+            get { return "Libs.Bar"; }
         }
 
         protected override void AddToGraph()

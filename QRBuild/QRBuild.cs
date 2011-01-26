@@ -97,6 +97,7 @@ namespace QRBuild
                 new CLHandlerClobber(),
                 new CLHandlerWipe(),
                 new CLHandlerShow(),
+                new CLHandlerGraphViz(),
             };
             Array.Sort(clHandlers);
             return clHandlers.ToList();

@@ -59,6 +59,7 @@
     <Compile Include="ProjectSystem\CommandLine\CLHandler.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClean.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerClobber.cs" />
+    <Compile Include="ProjectSystem\CommandLine\CLHandlerGraphViz.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerProject.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerShow.cs" />
     <Compile Include="ProjectSystem\CommandLine\CLHandlerWipe.cs" />

@@ -85,26 +85,7 @@ namespace QRBuild
             inputs = new HashSet<string>();
             outputs = new HashSet<string>();
 
-            ComputeDependencies(buildOptions);
-            if (!m_dependenciesValid) {
-                return;
-            }
-
-            HashSet<BuildFile> targets = GetBuildFilesForPaths(targetPaths);
-
-            HashSet<BuildNode> buildNodes = GetBuildNodesForFiles(targets);
-            if (buildNodes == null) {
-                return;
-            }
-
-            BuildResults buildResults = new BuildResults();
-            BuildProcess buildProcess = new BuildProcess(
-                this,
-                BuildAction.Build /* don't care */,
-                buildOptions,
-                buildResults /* don't care */,
-                buildNodes,
-                true /* processDependencies */);
+            BuildProcess buildProcess = CreateBuildProcess(buildOptions, targetPaths);
             buildProcess.GetInputsAndOutputs(m_buildFiles.Values, inputs, outputs);
         }
 
@@ -157,6 +138,34 @@ namespace QRBuild
             BuildFile buildFile;
             m_buildFiles.TryGetValue(filePath, out buildFile);
             return buildFile;
+        }
+
+        internal BuildProcess CreateBuildProcess(
+            BuildOptions buildOptions,
+            IEnumerable<string> targetPaths)
+        {
+            ComputeDependencies(buildOptions);
+            if (!m_dependenciesValid) {
+                return null;
+            }
+
+            HashSet<BuildFile> targets = GetBuildFilesForPaths(targetPaths);
+
+            HashSet<BuildNode> buildNodes = GetBuildNodesForFiles(targets);
+            if (buildNodes == null) {
+                return null;
+            }
+
+            BuildResults buildResults = new BuildResults();
+            BuildProcess buildProcess = new BuildProcess(
+                this,
+                BuildAction.Build /* don't care */,
+                buildOptions,
+                buildResults /* don't care */,
+                buildNodes,
+                true /* processDependencies */);
+            
+            return buildProcess;
         }
 
 

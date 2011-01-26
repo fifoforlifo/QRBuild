@@ -14,25 +14,36 @@ namespace QRBuild.ProjectSystem.CommandLine
         {
             get
             {
-                return
+                string standardOptions =
 String.Format("usage: qr {0} [options] [targets]\n", Name) +
 "  targets       Space-delimited list of targets to build.\n" +
 "                By default, the DefaultTarget of all projects in the\n" +
 "                project file are processed.\n" +
-"options:\n" +
+"standard options:\n" +
 "  -p fname      Load specified project file.\n" +
 "  -a variant    Specify variant string.\n" +
 "  -j maxproc    Max concurrent processes.\n" +
 "  -m name       ModuleName regex that determines what is built.\n" +
 "  -c            Contine on error.\n" +
-"  -v verbosity  Verbosity level from 0 - 2.  Default 0, higher prints more." +
+"  -v verbosity  Verbosity level from 0 - 2.  Default 0, higher prints more.\n" +
 "";
+                string longHelp = standardOptions + LongHelpExtra;
+                return longHelp;
             }
         }
 
         protected bool ParseArgs(string[] args)
         {
             for (int i = 1; i < args.Length; i++) {
+                // derived class gets first try
+                ParseResult parseResult = TryParseSingleArgument(args, ref i);
+                if (parseResult == ParseResult.Error) {
+                    return false;
+                }
+                else if (parseResult == ParseResult.Handled) {
+                    continue;
+                }
+
                 if (args[i] == "-p") {
                     i++;
                     if (i >= args.Length) {
@@ -208,6 +219,23 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
 
         protected virtual void ModifyOptions(BuildOptions options)
         {
+        }
+
+        protected virtual string LongHelpExtra
+        {
+            get { return String.Empty; }
+        }
+
+        protected enum ParseResult
+        {
+            Error,
+            NotHandled,
+            Handled,
+        }
+
+        protected virtual ParseResult TryParseSingleArgument(string[] args, ref int i)
+        {
+            return ParseResult.NotHandled;
         }
 
         protected static string ComputeModuleNameRegex(

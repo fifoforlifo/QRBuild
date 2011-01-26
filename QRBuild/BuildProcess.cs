@@ -60,6 +60,11 @@ namespace QRBuild
             }
         }
 
+        public HashSet<BuildNode> RequiredNodes
+        {
+            get { return m_requiredNodes; }
+        }
+
 
         ///-----------------------------------------------------------------
         /// Helpers
