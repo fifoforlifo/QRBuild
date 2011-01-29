@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="BuildNodeExtensions.cs" />
     <Compile Include="BuildWorkItem.cs" />
+    <Compile Include="FileMD5HashDecider.cs" />
     <Compile Include="IO\QRDirectory.cs" />
     <Compile Include="IO\QRFile.cs" />
     <Compile Include="IO\QRSystem.cs" />

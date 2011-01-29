@@ -208,6 +208,7 @@ String.Format("usage: qr {0} [options] [targets]\n", Name) +
             Console.WriteLine("BuildResults.UpToDateCount              = {0}", buildResults.UpToDateCount);
             Console.WriteLine("BuildResults.UpdateImplicitInputsCount  = {0}", buildResults.UpdateImplicitInputsCount);
             Console.WriteLine("BuildOptions.FileDecider.FStatCount     = {0}", options.FileDecider.FStatCount);
+            Console.WriteLine("BuildOptions.FileDecider.BytesRead      = {0}", options.FileDecider.BytesRead);
             TimeSpan executionTime = buildResults.ExecuteEndTime - buildResults.ExecuteStartTime;
             Console.WriteLine("# ExecutionTime                         = {0}", executionTime);
         }

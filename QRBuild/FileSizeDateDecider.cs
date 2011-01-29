@@ -25,11 +25,12 @@ namespace QRBuild
 
         public long FStatCount
         {
-            get
-            {
-                long result = Interlocked.Add(ref m_fstatCount, 0);
-                return result;
-            }
+            get { return m_fstatCount; }
+        }
+
+        public long BytesRead
+        {
+            get { return 0; }
         }
 
         private void AtomicIncrementFStatCount()

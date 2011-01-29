@@ -14,6 +14,8 @@ namespace QRBuild
         string GetVersionStamp(string filePath);
 
         long FStatCount { get; }
+
+        long BytesRead { get; }
     }
 
     public static class FileDecider
