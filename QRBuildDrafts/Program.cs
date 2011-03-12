@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using QRBuild.Text;
 using QRBuild.Translations;
 using QRBuild.Translations.ToolChain.Msvc;
 using QRBuild.Translations.ToolChain.MsCsc;
@@ -323,7 +324,7 @@ ENDLOCAL
             Console.WriteLine("VariantStringFormat  = {0}", format);
             string value = v.ToString();
             Console.WriteLine("VariantString        = {0}", value);
-            string options = v.GetVariantStringOptions();
+            string options = v.GetVariantStringOptions("\t");
             Console.WriteLine("VariantStringOptions = \n{0}", options);
 
             Variant v2 = new Variant();
@@ -331,6 +332,22 @@ ENDLOCAL
             Console.WriteLine("FromString,ToString  = {0}", v2.ToString());
         }
 
+        static void TestStringInterpolator()
+        {
+            StringInterpolator.Options options = new StringInterpolator.Options();
+            IList<StringInterpolator.Token> tokens = StringInterpolator.Tokenize(
+                options,
+                @"c:\foo\$(bar) $(opt)");
+            Func<string, string> getValue =
+                name =>
+                {
+                    if (name == "bar") return "alpha.exe";
+                    if (name == "opt") return "--skip=true";
+                    return null;
+                };
+            string result = StringInterpolator.Interpolate(options, tokens, getValue);
+            Console.WriteLine("");
+        }
 
         static void Main(string[] args)
         {
@@ -361,7 +378,7 @@ ENDLOCAL
             TestDependencyChain();
 #endif
 
-#if true
+#if false
             for (int i = 0; i < 1; i++) {
                 CompileLink1.TestCppCompileLink();
             }
@@ -399,7 +416,14 @@ ENDLOCAL
             Console.ReadKey();
 #endif
 
+#if false
             TestBuildVariant();
+#endif
+
+#if true
+            TestStringInterpolator();
+#endif
+
         }
     }
 }

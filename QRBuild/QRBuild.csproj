@@ -72,6 +72,7 @@
     <Compile Include="ProjectSystem\Target.cs" />
     <Compile Include="ProjectSystem\VariantPartAttribute.cs" />
     <Compile Include="QRBuild.cs" />
+    <Compile Include="Text\StringInterpolator.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompile.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompileExtensions.cs" />
     <Compile Include="Translations\ToolChain\Msvc\MsvcCompileParams.cs" />
