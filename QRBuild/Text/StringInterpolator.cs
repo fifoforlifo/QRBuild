@@ -13,15 +13,21 @@ namespace QRBuild.Text
                 EvalChar = '$';
                 LParen = '(';
                 RParen = ')';
+                ThrowOnUnknownKey = true;
             }
 
             /// EvalChar is the character that indicates
-            /// the evaluation of a variable.
+            /// the evaluation of a substitution.
             /// The default value is '$'.
             public char EvalChar { get; set; }
 
             public char LParen { get; set; }
             public char RParen { get; set; }
+
+            /// If true, then an unknown key in a substitution will cause
+            /// an exception to be thrown.
+            /// If false, then an empty string will be substituted.
+            public bool ThrowOnUnknownKey { get; set; }
         }
 
         public enum TokenType
@@ -57,8 +63,13 @@ namespace QRBuild.Text
                         builder.Append(value);
                     }
                     else {
-                        // TODO: could add an option to throw in this case
-                        builder.Append(String.Empty);
+                        if (options.ThrowOnUnknownKey) {
+                            String errorString = String.Format("Missing key '{0}' in substitution.", token.Value);
+                            throw new InvalidOperationException(errorString);
+                        }
+                        else {
+                            builder.Append(String.Empty);
+                        }
                     }
                 }
             }
